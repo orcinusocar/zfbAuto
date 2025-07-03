@@ -1,6 +1,4 @@
-// 导入 AutoJS 的相关模块
 var packageName = "com.eg.android.AlipayGphone"; // 视频App的包名
-
 
 // 打开视频App
 launch(packageName);
@@ -11,7 +9,7 @@ waitForPackage(packageName);
 // 收集信息
 // collectInfo();
 
-//测试识别直播image.png
+//测试识别直播
 testDetection();
 
 //打印当前页面控件信息
@@ -67,7 +65,7 @@ function checkLivePreview() {
         .find()
         .filter(c => {
             let bounds = c.bounds();
-            return (bounds.right - bounds.left) > 0 ;    // 高度有效
+            return (bounds.right - bounds.left) > 0 ;   
         });
 
     // console.log(liveTag);
@@ -218,36 +216,36 @@ function getLiveDesc() {
     }
 }
 
-function collectInfo() {
-    //收集数量
-    let collectVideoNum = 2;
-    let collectLiveNum = 2;
+// function collectInfo() {
+//     //收集数量
+//     let collectVideoNum = 2;
+//     let collectLiveNum = 2;
     
-    //开始收集
-    while (collectVideoNum > 0 || collectLiveNum > 0) {
-        if (checkLivePreview()) {
-            collectLiveInfo();
-            collectLiveNum--;
-            toast("收集到直播信息");
-            takeScreenshot();
-            autoSwipe();
-            sleep(2000); // 等待滑动完成
-        } else {
-            collectVideoInfo();
-            collectVideoNum--;
-            toast("收集到视频信息");
-            takeScreenshot();
-            autoSwipe();
-            sleep(2000); // 等待滑动完成
-        }
+//     //开始收集
+//     while (collectVideoNum > 0 || collectLiveNum > 0) {
+//         if (checkLivePreview()) {
+//             collectLiveInfo();
+//             collectLiveNum--;
+//             toast("收集到直播信息");
+//             takeScreenshot();
+//             autoSwipe();
+//             sleep(2000); // 等待滑动完成
+//         } else {
+//             collectVideoInfo();
+//             collectVideoNum--;
+//             toast("收集到视频信息");
+//             takeScreenshot();
+//             autoSwipe();
+//             sleep(2000); // 等待滑动完成
+//         }
 
-        // 无论是否找到直播，都执行一次滑动
-        if (collectVideoNum > 0 || collectLiveNum > 0) {
-            autoSwipe();
-            sleep(2000);
-        }
-    }
-}
+//         // 无论是否找到直播，都执行一次滑动
+//         if (collectVideoNum > 0 || collectLiveNum > 0) {
+//             autoSwipe();
+//             sleep(2000);
+//         }
+//     }
+// }
 
 // 测试直播&视频识别
 function testDetection() {
@@ -258,8 +256,9 @@ function testDetection() {
         console.log("--------------------------------");
         console.log("第" + (count + 1) + "次测试");
 
-        // 检测是否在直播预览界面
+        
         if (checkLivePreview()) {
+            // 检测是否在直播预览界面
             console.log("识别到直播，收集直播信息");
             takeScreenshot();
             collectLiveInfo();
@@ -274,12 +273,15 @@ function testDetection() {
             autoOutLive();
             autoOutLive();
             sleep(1000);
-        }else {
+        }else if(isInVideo()){
             console.log("识别到视频，收集视频信息");
             takeScreenshot();
             collectVideoInfo();
             watchVideo();
             toast("收集到视频信息");
+        }else{
+            console.log("未识别到直播或视频，进入视频界面");
+            intoVideo();
         }
         
         //模拟滑动
@@ -290,57 +292,57 @@ function testDetection() {
 }
 
 // 打印当前页面控件信息
-function printCurrentPageControls() {
-    // 获取当前所有可见控件
-    let controls = className("android.widget.TextView").find();
-    console.log("当前页面控件数量:", controls.length);
+// function printCurrentPageControls() {
+//     // 获取当前所有可见控件
+//     let controls = className("android.widget.TextView").find();
+//     console.log("当前页面控件数量:", controls.length);
 
-    // 遍历并打印控件信息
-    for (let i = 0; i < controls.length; i++) {
-        let control = controls[i];
-        console.log("--- 控件 " + (i + 1) + " ---");
-        console.log("类名:", control.className());
-        console.log("文本:", control.text());
-        console.log("ID:", control.id());
-        console.log("深度:", control.depth());
-        console.log("坐标:", control.bounds());
-        console.log("是否可点击:", control.clickable());
-    }
+//     // 遍历并打印控件信息
+//     for (let i = 0; i < controls.length; i++) {
+//         let control = controls[i];
+//         console.log("--- 控件 " + (i + 1) + " ---");
+//         console.log("类名:", control.className());
+//         console.log("文本:", control.text());
+//         console.log("ID:", control.id());
+//         console.log("深度:", control.depth());
+//         console.log("坐标:", control.bounds());
+//         console.log("是否可点击:", control.clickable());
+//     }
 
-    let author = className("android.widget.TextView")
-        .depth(24)
-        .id("com.alipay.android.living.dynamic:id/author_title")
-        .find()
-        .filter(c => c.bounds().left > 0)[0]; 
+//     let author = className("android.widget.TextView")
+//         .depth(24)
+//         .id("com.alipay.android.living.dynamic:id/author_title")
+//         .find()
+//         .filter(c => c.bounds().left > 0)[0]; 
 
-    if (author) {
-        console.log("作者:", author.text());
-    } else {
-        console.log("未找到作者控件");
-    }
+//     if (author) {
+//         console.log("作者:", author.text());
+//     } else {
+//         console.log("未找到作者控件");
+//     }
 
 
-    let like = className("android.widget.TextView")
-        .textMatches(/.*点赞.*/)
-        .findOne(); 
+//     let like = className("android.widget.TextView")
+//         .textMatches(/.*点赞.*/)
+//         .findOne(); 
 
-    if (like && like.text) {
-        console.log("点赞:", like.text());
-    } else {
-        console.log("未找到点赞控件");
-    }
+//     if (like && like.text) {
+//         console.log("点赞:", like.text());
+//     } else {
+//         console.log("未找到点赞控件");
+//     }
 
-    let descs = className("android.widget.TextView")
-        .depth(24)
-        .find()
-        .filter(c => c.bounds().left > 0 && c.text().length > 0);
+//     let descs = className("android.widget.TextView")
+//         .depth(24)
+//         .find()
+//         .filter(c => c.bounds().left > 0 && c.text().length > 0);
 
-    if (descs && descs.length > 0) {
-        console.log("直播描述:", descs[2].text());
-    } else {
-        console.log("未找到直播描述");
-    }
-}
+//     if (descs && descs.length > 0) {
+//         console.log("直播描述:", descs[2].text());
+//     } else {
+//         console.log("未找到直播描述");
+//     }
+// }
 
 
 function isInLiveRoom() {
@@ -359,9 +361,49 @@ function isInLiveRoom() {
 
 function hasGuideMask() {
     // 检测是否弹出关注主播控件
-    let mask = className("android.widget.TextView").depth(12).findOne(500);
+    let mask = className("android.widget.TextView").depth(12).findOne(500); //无法直接用id查找
     return mask && mask.id() == "followGuide-mask"; 
 }
 
+function isInVideo(){
+    let video = id("com.alipay.android.living.dynamic:id/author_title").findOne(500);
+    return video != null; 
+}
+
+function intoVideo() {
+    // 1. 定位视频标签控件
+    let videoTab = id("com.alipay.android.tablauncher:id/tab_description")
+        .text("视频")
+        .findOne(5000); // 增加等待时间
+  
+    if (!videoTab) {
+        toast("未找到视频入口");
+        return false;
+    }
+  
+    // 2. 尝试点击父控件（提高兼容性）
+    let parent = videoTab.parent();
+    if (parent) {
+        parent.click();
+        console.log("已点击视频入口");
+        sleep(2000); // 等待界面跳转
+    } else {
+        videoTab.click();
+        console.log("直接点击视频标签");
+        sleep(2000);
+    }
+  
+    // 3. 验证是否成功进入视频界面
+    let isSuccess = id("com.alipay.android.living.dynamic:id/video_view").findOne(3000) 
+                   || textMatches(/.*点赞.*/).findOne(3000);
+    
+    if (isSuccess) {
+        console.log("成功进入视频界面");
+        return true;
+    } else {
+        toast("跳转视频界面失败");
+        return false;
+    }
+  }
 
 

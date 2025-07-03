@@ -11,3 +11,7 @@
 let currentPackageName = currentPackage();
 console.log("当前前台应用的包名是: " + currentPackageName);
 
+let currentActivity = currentActivity();
+console.log("当前 Activity:", currentActivity);
+// let pname = getPackageName("鲸志出行");
+// console.log(pname);
