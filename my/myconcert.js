@@ -58,8 +58,22 @@ function intoConcert() {
     }
 }
 
+function getCurrentCity(){
+    let cityTag = className("android.view.View").boundsInside(44,200,150,300).clickable(false).findOne(2000);
+    let city = "";
+    if(cityTag && cityTag.text() != ""){
+        city = cityTag.text();
+        console.log("当前城市:",city);
+        return city;
+    }else{
+        console.log("未找到城市")
+        return "unknown";
+    }
+}
+
 // 收集城市演唱会信息
 function collectConcertInfo() {
+    let city = getCurrentCity();
     let bottomTag = null;
     while (!bottomTag) {
         bottomTag = text("只有这么多了").findOnce();
@@ -67,7 +81,7 @@ function collectConcertInfo() {
     }
     sleep(2000);
     let allConcert = getAllConcert();
-    return allConcert;
+    return {"城市：":city,"演唱会详情":allConcert};
 }
 
 // 主逻辑
@@ -80,7 +94,7 @@ function main() {
     const endTime = new Date(); 
     const duration = (endTime - startTime) / 1000; // 计算总耗时（秒）
     console.log(`脚本运行结束，用时 ${duration.toFixed(3)} 秒`);
-    uploadLog("演唱会详情：" + JSON.stringify(singleCityConcert, null, 2),duration + "s");
+    uploadLog(JSON.stringify(singleCityConcert, null, 2),duration + "s");
 }
 
 // 启动
@@ -116,8 +130,8 @@ function getAllConcert() {
     let controls = textMatches(/.*[¥￥].*\d+.*|即将开售|[¥￥]/).find();
     let allConcerts = []; 
     let uniqueNames = new Set();
-
-    if (controls.length > 0) {
+    let count = controls.length;
+    if (count > 0) {
         console.log("找到", controls.length, "个匹配的控件");
         for (let i = 0; i < controls.length; i++) {
             let control = controls[i];
@@ -142,7 +156,7 @@ function getAllConcert() {
     }
 
     console.log("所有演唱会票务信息：", JSON.stringify(allConcerts, null, 2));
-    return allConcerts; 
+    return {"数量":count,"详情":allConcerts}; 
 }
 
 function getConcertDetail() {
