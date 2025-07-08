@@ -1,6 +1,7 @@
 
 
 function getParent(control){
+    console.log(control.parent());
     return control.parent();
 }
 
@@ -17,7 +18,7 @@ function getChildren(control){
 }
 
 
-// let controls = className("android.view.View").depth(18).find();
+
 // for (let i = 0; i < controls.length; i++) {
 //     let control = controls[i];
 //     let parent = getParent(control);
@@ -25,21 +26,21 @@ function getChildren(control){
 //     getChildren(parent);
 // }
 
-let controls = boundsInside(44,900,866,1100).find();
+// let controls = boundsInside(44,900,866,1100).find();
 
-for (let i = 0; i < controls.length; i++) {
-    let control = controls[i];
-    let text = control.text();
-    if (text && text.trim() !== "") {
-        console.log("文本不为空的控件:", text);
-    }
-}
+// for (let i = 0; i < controls.length; i++) {
+//     let control = controls[i];
+//     let text = control.text();
+//     if (text && text.trim() !== "") {
+//         console.log("文本不为空的控件:", text);
+//     }
+// }
 
 // console.log(control);
 
-// let control = textContains("2025.08.16").findOne(2000);
-// let parent = getParent(control);
-// getChildren(parent);
+let control = textContains("首页").findOne(2000);
+let parent = getParent(control);
+getChildren(parent);
 
 // let control = className("android.view.View").findOne(2000);
 // let controls = text("2025华语辩论世界杯总决赛").find();

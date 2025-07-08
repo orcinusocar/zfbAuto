@@ -31,7 +31,7 @@ function autoOutPage(){
 
 function getConcertName(){
     sleep(3000);
-    let Concert = boundsInside(365,258,1036,500).clickable().findOne(2000);
+    let Concert = boundsInside(365,258,1200,500).clickable().findOne(2000);
     if(Concert){
         console.log(Concert.text());
     }else{
@@ -108,6 +108,9 @@ function getConcertprice(){
             if (text.includes("-")) {
                 price = text;
                 break; 
+            }else if(/\d/.test(text)){
+                price = text;
+                break;
             }
         }
         if (price) {
@@ -125,10 +128,10 @@ function getConcertprice(){
 }
 // getConcertDetail();
 
-getConcertName();
-getConcertTime();
-getConcertLocation();
-getConcertprice();
+// getConcertName();
+// getConcertTime();
+// getConcertLocation();
+// getConcertprice();
 
 // let bottomTag = null;
 // while(!bottomTag){
@@ -138,3 +141,6 @@ getConcertprice();
 // console.log("滑动结束");
 // bottomTag = text("只有这么多了").findOnce();
 // console.log(bottomTag.text());
+
+let control = id("com.sankuai.movie:id/db9").findOne(2000);
+control.parent().click();
