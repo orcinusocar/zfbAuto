@@ -66,7 +66,7 @@ function intoConcert() {
 }
 
 function getCurrentCity(){
-    const maxRetries = 2;
+    const maxRetries = 5;
     let retryCount = 0;
     while (retryCount < maxRetries) {
         let cityTag = className("android.view.View").boundsInside(44,200,150,300).clickable(false).findOne(2000);
@@ -146,8 +146,8 @@ function getAllConcert() {
     let controls = textMatches(/.*[¥￥].*\d+.*|即将开售|[¥￥]/).find();
     let allConcerts = []; 
     let uniqueNames = new Set();
-    let count = controls.length;
-    if (count > 0) {
+    
+    if (controls && controls.length > 0) {
         console.log("找到", controls.length, "个匹配的控件");
         for (let i = 0; i < controls.length; i++) {
             let control = controls[i];
@@ -155,11 +155,18 @@ function getAllConcert() {
             let parent = control.parent();
             if (!parent) {
                 console.log("控件父元素不存在，跳过");
-                continue; // 跳过无效控件
+                continue;
             }
             parent.click();
             sleep(3000);
-            let concertDetails = getConcertDetail(); 
+            
+            let concertDetails = getConcertDetail();
+            if (!concertDetails || !concertDetails.name) {
+                console.log("获取演唱会详情失败，跳过");
+                outBtn();
+                sleep(2000);
+                continue;
+            }
             
             if (!uniqueNames.has(concertDetails.name)) {
                 allConcerts.push(concertDetails);
