@@ -32,7 +32,7 @@ function intoConcert() {
         let isSuccess = false;
 
         while (retryCount < maxRetries && !isSuccess) {
-            let concertTab = id("com.sankuai.movie:id/dj7").text("演唱会").findOne(5000);
+            let concertTab = id("com.sankuai.movie:id/dj7").text("演唱会").findOne(2000);
             if (concertTab) {
                 concertTab.click();
                 console.log(`第 ${retryCount + 1} 次尝试进入演出票务列表...`);
@@ -69,7 +69,7 @@ function getCurrentCity(){
     const maxRetries = 5;
     let retryCount = 0;
     while (retryCount < maxRetries) {
-        let cityTag = className("android.view.View").boundsInside(44,200,150,300).clickable(false).findOne(2000);
+        let cityTag = className("android.view.View").boundsInside(44,200,150,300).clickable(false).findOne(1500);
         let city = "";
         if(cityTag && cityTag.text() != ""){
             city = cityTag.text();
@@ -192,19 +192,27 @@ function getAllConcert() {
 }
 
 function getConcertDetail() {
+    const maxRetries = 5;
+    let retryCount = 0;
     let concertDetailTap = null;
-    while (!concertDetailTap) {
-        sleep(1000);
-        concertDetailTap = className("android.widget.TextView").id("com.sankuai.movie:id/dqm").text("猫眼演出详情").findOnce();
+    while ( retryCount < maxRetries) {
+        concertDetailTap = className("android.widget.TextView").id("com.sankuai.movie:id/dqm").text("猫眼演出详情").findOne(2000);
+        if(concertDetailTap){
+            console.log(`检测在猫眼演出详情页`);
+            sleep(4000);
+            return {
+                name: getConcertName() || "演出名称未知",
+                price: getConcertprice() || "价格待定",
+                time: getConcertTime() || "时间待定",
+                location: getConcertLocation() || "地点待定"
+            };
+        }else{
+            retryCount++;
+            console.log(`不在猫眼演出详情页，第 ${retryCount} 次重试`);
+        }
+        
     }
-    sleep(3000);
-    
-    return {
-        name: getConcertName() || "演出名称未知",
-        price: getConcertprice() || "价格待定",
-        time: getConcertTime() || "时间待定",
-        location: getConcertLocation() || "地点待定"
-    };
+
 }
 
 function uploadLog(message,duration) {
@@ -219,7 +227,7 @@ function uploadLog(message,duration) {
 }
 
 function getConcertName() {
-    const maxRetries = 2;
+    const maxRetries = 5;
     let retryCount = 0;
     while (retryCount < maxRetries) {
         let ConcertNameControls = boundsInside(360, 200, 1200, 500).className("android.view.View").find();
@@ -234,7 +242,7 @@ function getConcertName() {
         }
         
         retryCount++;
-        console.log(`第 ${retryCount} 次重试...`);
+        console.log(`第 ${retryCount} 次重试获取演出名称`);
     }
     console.log("没有找到演出名称");
     return "演出名称未知";
@@ -244,7 +252,7 @@ function getConcertprice(){
     const maxRetries = 2;
     let retryCount = 0;
     while(retryCount < maxRetries) {
-        let priceExist = text("元").findOne(2000);
+        let priceExist = text("元").findOne(1000);
         if(priceExist){
             let children = priceExist.parent().children();
             let price = null;
