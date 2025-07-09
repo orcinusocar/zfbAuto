@@ -100,11 +100,13 @@ function collectConcertInfo() {
 // 主逻辑
 function main() {
     try {
-        // 主逻辑
+        const startTime = new Date();
+
         intoConcert();
         let singleCityConcert = collectConcertInfo();
-        const startTime = new Date();
-        const duration = ((new Date()) - startTime) / 1000;
+        
+        const endTime = new Date();
+        const duration = (endTime - startTime) / 1000;
         uploadLog(JSON.stringify(singleCityConcert, null, 2), duration + "s");
     } catch (e) {
         console.log("全局捕获异常:", e);
