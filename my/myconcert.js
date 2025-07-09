@@ -25,36 +25,43 @@ function ensureMainPage() {
 
 // 进入演出票务列表
 function intoConcert() {
-    ensureMainPage();
-    const maxRetries = 3; // 最大重试次数
-    let retryCount = 0;
-    let isSuccess = false;
+    try {
+        ensureMainPage();
+        const maxRetries = 3; // 最大重试次数
+        let retryCount = 0;
+        let isSuccess = false;
 
-    while (retryCount < maxRetries && !isSuccess) {
-        let concertTab = id("com.sankuai.movie:id/dj7").text("演唱会").findOne(5000);
-        if (concertTab) {
-            concertTab.click();
-            console.log(`第 ${retryCount + 1} 次尝试进入演出票务列表...`);
-            sleep(3000);
-            //是否成功进入
-            let isConcertListPage = id("com.sankuai.movie:id/dqm").findOne(2000);
-            if (isConcertListPage) {
-                console.log("成功进入演出票务列表");
-                isSuccess = true;
+        while (retryCount < maxRetries && !isSuccess) {
+            let concertTab = id("com.sankuai.movie:id/dj7").text("演唱会").findOne(5000);
+            if (concertTab) {
+                concertTab.click();
+                console.log(`第 ${retryCount + 1} 次尝试进入演出票务列表...`);
+                sleep(3000);
+                //是否成功进入
+                let isConcertListPage = id("com.sankuai.movie:id/dqm").findOne(2000);
+                if (isConcertListPage) {
+                    console.log("成功进入演出票务列表");
+                    isSuccess = true;
+                } else {
+                    console.log("未成功进入演出票务列表，尝试返回首页重试...");
+                    outBtn();
+                    sleep(2000);
+                    ensureMainPage(); 
+                }
             } else {
-                console.log("未成功进入演出票务列表，尝试返回首页重试...");
-                outBtn();
-                sleep(2000);
-                ensureMainPage(); 
+                console.log("未找到演唱会入口");
             }
-        } else {
-            console.log("未找到演唱会入口");
+            retryCount++;
         }
-        retryCount++;
-    }
 
-    if (!isSuccess) {
-        console.log("多次尝试后仍未能进入演出票务列表");
+        if (!isSuccess) {
+            console.log("多次尝试后仍未能进入演出票务列表");
+            return false; // 失败标志
+        }
+        return true; // 成功标志
+    } catch (e) {
+        console.log("进入演出列表失败:", e);
+        return false;
     }
 }
 
@@ -92,15 +99,17 @@ function collectConcertInfo() {
 
 // 主逻辑
 function main() {
-    const startTime = new Date(); 
-
-    intoConcert();
-    let singleCityConcert = collectConcertInfo();
-
-    const endTime = new Date(); 
-    const duration = (endTime - startTime) / 1000; // 计算总耗时（秒）
-    console.log(`脚本运行结束，用时 ${duration.toFixed(3)} 秒`);
-    uploadLog(JSON.stringify(singleCityConcert, null, 2),duration + "s");
+    try {
+        // 主逻辑
+        intoConcert();
+        let singleCityConcert = collectConcertInfo();
+        const startTime = new Date();
+        const duration = ((new Date()) - startTime) / 1000;
+        uploadLog(JSON.stringify(singleCityConcert, null, 2), duration + "s");
+    } catch (e) {
+        console.log("全局捕获异常:", e);
+        uploadLog(`脚本异常: ${e.message}`, "0s (失败)");
+    }
 }
 
 // 启动
