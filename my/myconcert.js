@@ -176,7 +176,10 @@ function getAllConcert() {
     }
 
     console.log("所有演唱会票务信息：", JSON.stringify(allConcerts, null, 2));
-    return {"数量":count,"详情":allConcerts}; 
+    return {
+        数量: uniqueNames.size,
+        详情: allConcerts
+    };
 }
 
 function getConcertDetail() {
@@ -186,25 +189,13 @@ function getConcertDetail() {
         concertDetailTap = className("android.widget.TextView").id("com.sankuai.movie:id/dqm").text("猫眼演出详情").findOnce();
     }
     sleep(3000);
-    let concertName = getConcertName();
-    let concertprice = getConcertprice();
-    let concertTime = getConcertTime();
-    let concertLocation = getConcertLocation();
-
-    const concertDetails = {
-        name: concertName,
-        price: concertprice,
-        time: concertTime,
-        location: concertLocation
+    
+    return {
+        name: getConcertName() || "演出名称未知",
+        price: getConcertprice() || "价格待定",
+        time: getConcertTime() || "时间待定",
+        location: getConcertLocation() || "地点待定"
     };
-
-    if (concertName && concertprice && concertTime && concertLocation) {
-        console.log("演唱会详情：", JSON.stringify(concertDetails, null, 2));
-    } else {
-        console.log("演唱会详情缺少信息");
-    }
-
-    return concertDetails;
 }
 
 function uploadLog(message,duration) {
