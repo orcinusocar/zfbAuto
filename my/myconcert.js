@@ -145,7 +145,7 @@ function outBtn() {
 }
 
 function getAllConcert() {
-    let controls = textMatches(/.*[¥￥].*\d+.*|即将开售|[¥￥]/).find();
+    let controls = textMatches(/.*[¥￥].*\d+.*|价格待定|.*[¥￥](?!.).*/).find();
     let allConcerts = []; 
     let uniqueNames = new Set();
     
