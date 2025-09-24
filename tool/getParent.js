@@ -1,7 +1,7 @@
 
 
 function getParent(control){
-    console.log(control.parent());
+    console.log('parent:',control.parent());
     return control.parent();
 }
 
@@ -19,58 +19,17 @@ function getChildren(control){
 
 
 
-// for (let i = 0; i < controls.length; i++) {
-//     let control = controls[i];
-//     let parent = getParent(control);
-//     console.log("第",i,"个父控件:",parent);
-//     getChildren(parent);
-// }
+let control = descContains("空铁政策").findOne(2000);
 
-// let controls = boundsInside(44,900,866,1100).find();
-
-// for (let i = 0; i < controls.length; i++) {
-//     let control = controls[i];
-//     let text = control.text();
-//     if (text && text.trim() !== "") {
-//         console.log("文本不为空的控件:", text);
-//     }
-// }
-
-// console.log(control);
-
-let control = textContains("首页").findOne(2000);
-let parent = getParent(control);
-getChildren(parent);
-
-// let control = className("android.view.View").findOne(2000);
-// let controls = text("2025华语辩论世界杯总决赛").find();
+let parent = control.parent();
+let controls = parent.children();
 
 
-// parent.click();
-// let control2 = bounds(365,258,1036,390).findOne(2000);
-// console.log(control2);
-// 获取父控件的所有子控件
-// let children = parent.children();
-// let price = null;
-// for (let i = 0; i < children.length; i++) {
-//     let child = children[i];
-//     let text = child.text() || "";
-//     if (text.includes("-")) {
-//         price = text;
-//         break; 
-//     }
-// }
+// 匹配整个文本内容
+// let control = textMatches(/^第[A-Z0-9]+航班$/).findOne(2000);
 
-// if (price) {
-//     console.log("找到价格文本:", price);
-// } else {
-//     console.log("未找到包含 '-' 的价格文本");
-// }
-// let child = getChildren(children[0]);
-
-// preparent = getParent(parent);
-// console.log(preparent);
-// prechild = getChildren(preparent);
-// child = getChildren(prechild);
-
+for(let i = 0; i < controls.length; i++){
+    let c = controls[i];
+    console.log('控件'+i+':'+'desc:'+c.desc()+' '+'text:'+c.text());
+}
 
