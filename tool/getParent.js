@@ -19,17 +19,47 @@ function getChildren(control){
 
 
 
-let control = descContains("空铁政策").findOne(2000);
+// 将初始匹配控件改为航班价格
+// let control = descEndsWith("出发时间").findOne(2000);
+// let control = descEndsWith("航班价格").findOne(2000);
+let control = descMatches(/^\d+出发日期$/).findOne(2000);
 
+console.log("control",control);
 let parent = control.parent();
-let controls = parent.children();
+console.log("parent:",parent);
+
+let grandparent = parent.parent();
+let greategrandparent = grandparent.parent();
+let greatergrandparent = greategrandparent.parent();
+
+// let children = control.children();
+// console.log("children:",children);
 
 
-// 匹配整个文本内容
-// let control = textMatches(/^第[A-Z0-9]+航班$/).findOne(2000);
+let controls = parent.children();        
+let controls2 = grandparent.children();  
+let contorls3 = greategrandparent.children(); 
+let controls4 = greatergrandparent.children();
 
+console.log('---controls---')
 for(let i = 0; i < controls.length; i++){
     let c = controls[i];
     console.log('控件'+i+':'+'desc:'+c.desc()+' '+'text:'+c.text());
 }
 
+console.log('---controls2---')
+for(let i = 0; i < controls2.length; i++){
+    let c = controls2[i];
+    console.log('控件'+i+':'+'desc:'+c.desc()+' '+'text:'+c.text());
+}
+
+console.log('---controls3---')
+for(let i = 0; i < contorls3.length; i++){
+    let c = contorls3[i];
+    console.log('控件'+i+':'+'desc:'+c.desc()+' '+'text:'+c.text());
+}
+console.log('---controls4---')
+for(let i = 0; i < controls4.length; i++){
+    let c = controls4[i];
+    console.log('控件'+i+':'+'desc:'+c.desc()+' '+'text:'+c.text());
+}

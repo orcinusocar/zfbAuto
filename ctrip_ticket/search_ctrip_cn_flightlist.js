@@ -27,148 +27,123 @@ function ismainpage(){
     return text("搜索").exists();
 }
 
-/**
- * 统一获取所有控件信息
- * @returns {Object} 控件信息对象
- */
-function getAllControlsInfo() {
-    let allControls = classNameMatches(/.*/).find();
-    
-    if (!allControls || allControls.length === 0) {
-        return {
-            controls: [],
-            hasControls: false,
-            message: "未找到任何控件"
-        };
-    }
-
-    // 预处理控件信息，避免重复解析
-    let controlsInfo = allControls.map((c, index) => {
-        try {
-            return {
-                index: index,
-                control: c,
-                desc: c.desc() || "",
-                text: c.text() || "",
-                id: c.id() || "",
-                bounds: c.bounds()
-            };
-        } catch (e) {
-            return {
-                index: index,
-                control: c,
-                desc: "",
-                text: "",
-                id: "",
-                bounds: null,
-                error: e.message
-            };
-        }
-    });
-
-    return {
-        controls: controlsInfo,
-        hasControls: true,
-        total: controlsInfo.length,
-        message: `成功获取 ${controlsInfo.length} 个控件`
-    };
-}
 
 /**
  * 从当前页面提取国内航班信息
- * @returns {Object} 航班列表
+ * @returns {Object} 包含普通航班和临近航班的列表
  */
 function extractFlights() {
-    let controlsInfo = getAllControlsInfo();
+    let normalFlights = {};
+    let nearbyFlights = {};
     
-    if (!controlsInfo.hasControls) {
-        return {
-            status: "no_controls",
-            message: controlsInfo.message,
-            flights: []
-        };
-    }
+    // 获取临近航班标志控件
+    let nearbyFlagControls = descContains("中转NearbyFlightDetail换乘城市快筛列表").find();
+    let endFlagControls = descContains("空铁政策").find();
+    
+    // 改为从航班价格控件开始查找
+    let controls = descEndsWith("航班价格").find();
+    for(let i = 0; i < controls.length; i++){
+        let control = controls[i];
+        let price = control.text();
+        let parent = control.parent();
+        let grandparent = parent.parent();
+        let greategrandparent = grandparent.parent();
 
-    let allControls = controlsInfo.controls;
-    let flights = {};
-
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-
-            let match = desc.match(/第([A-Z0-9]+)航班/);
-            if (!match) continue;
-
-            let flightCode = match[1]; 
-            if (!flights[flightCode]) {
-                flights[flightCode] = {
-                    flgno: flightCode,
-                    airline: null,
-                    departureTime: null,
-                    arrivalTime: null,
-                    nextDayInfo: null,
-                    departureAirport: null,
-                    arrivalAirport: null,
-                    flightDuration: null,
-                    transferCities: [],
-                    price: null
-                };
-            }
-
-            let flight = flights[flightCode];
-
-            // 更新字段匹配逻辑
-            if (desc.includes("出发时间")) flight.起飞时间 = text;
-            if (desc.includes("到达时间")) flight.到达时间 = text;
-            if (desc.includes("隔天信息")) flight.隔天信息 = text;
-            if (desc.includes("出发机场")) flight.起飞机场 = text;
-            if (desc.includes("到达机场")) flight.到达机场 = text;
-            if (desc.includes("飞行时长")) flight.飞行时长 = text;
-            if (desc.includes("价格")) flight.价格 = text;
-            if (desc.includes("中转城市")) flight.中转城市.push(text);
+        // 判断是否为临近航班
+        let isNearby = false;
+        if (nearbyFlagControls.length > 0) {
+            let controlBounds = control.bounds();
+            let nearbyFlagBounds = nearbyFlagControls[0].bounds();
+            let endFlagBounds = endFlagControls.length > 0 ? endFlagControls[0].bounds() : null;
             
-        } catch (e) {
-            // 忽略单个控件错误
-        }
-    }
-
-    // 单独处理航司名称 - 对所有控件都检查
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-            
-            if (text.includes("航空" ) || text.includes("国航")) {
-                // 查找最近的航班序号
-                let currentIndex = c.index;
-                
-                if (currentIndex >= 0) {
-                    // 向前查找最近的航班序号
-                    for (let j = currentIndex; j >= 0; j--) {
-                        let prevId = allControls[j].id;
-                        let prevMatch = prevId.match(/第([A-Z0-9]+)航班/);
-                        if (prevMatch) {
-                            let flightCode = prevMatch[1]; // 航班号
-                            if (flights[flightCode]) {
-                                flights[flightCode].航司名称 = text;
-                            }
-                            break;
-                        }
-                    }
+            if (controlBounds.top > nearbyFlagBounds.top) {
+                if (!endFlagBounds || controlBounds.top < endFlagBounds.top) {
+                    isNearby = true;
                 }
             }
-        } catch (e) {
-            // 忽略单个控件错误
+        }
+
+        // 在第一级父控件中查找舱位信息
+        let controls1 = parent.children();
+        let seatType = null;
+        
+        for (let j = 0; j < controls1.length; j++) {
+            let c = controls1[j];
+            if (c.desc() && c.desc().includes("航班舱等信息")) {
+                seatType = c.text();
+            }
+        }
+
+        // 在第二级父控件中查找余票量和其他信息
+        let controls2 = grandparent.children();
+        let ticketCount = null;
+        let departureTime = null;
+        let arrivalTime = null;
+        let departureAirport = null;
+        let arrivalAirport = null;
+        let airline = null;
+        let flightInfoList = []; // 改为数组存储多个文本信息
+        
+        for (let j = 0; j < controls2.length; j++) {
+            let c = controls2[j];
+            if (c.desc() && c.desc().includes("余票量")) {
+                ticketCount = c.text();
+            }
+            if (c.desc() && c.desc().includes("航班出发时间")) {
+                departureTime = c.text();
+            }
+            if (c.desc() && c.desc().includes("航班到达时间")) {
+                arrivalTime = c.text();
+            }
+            if (c.desc() && c.desc().includes("航班出发机场+航站楼")) {
+                departureAirport = c.text();
+            }
+            if (c.desc() && c.desc().includes("航班到达机场+航站楼")) {
+                arrivalAirport = c.text();
+            }
+            if (c.desc() && c.desc().includes("航班航司信息")) {
+                airline = c.text();
+            }
+            // 收集所有desc为null但text不为空的控件
+            if (c.desc() === null && c.text() !== null && c.text().trim() !== "") {
+                flightInfoList.push(c.text().trim());
+            }
+        }
+        
+        // 创建航班信息对象
+        let flightData = {
+            ticketCount: ticketCount,
+            price: price,
+            seatType: seatType,
+            departureTime: departureTime,
+            arrivalTime: arrivalTime,
+            departureAirport: departureAirport,
+            arrivalAirport: arrivalAirport,
+            airline: airline,
+            flightInfo: flightInfoList, // 改为数组
+            flightType: isNearby ? "临近航班" : "普通航班"
+        };
+        
+        // 根据类型添加到对应列表
+        if (isNearby) {
+            nearbyFlights[`flight_${i}`] = flightData;
+        } else {
+            normalFlights[`flight_${i}`] = flightData;
         }
     }
-    console.log(JSON.stringify(flights, null, 2));
-    console.log("航班数量:", Object.keys(flights).length);
+    
+    //调试信息
+    console.log("normalFlights:",JSON.stringify(normalFlights, null, 2));
+    console.log("nearbyFlights:",JSON.stringify(nearbyFlights, null, 2));
+
     return {
         status: "success",
         message: "航班信息提取完成",
-        total: Object.keys(flights).length,
-        flights: Object.values(flights)
+        normalFlights: Object.values(normalFlights),
+        nearbyFlights: Object.values(nearbyFlights),
+        normalTotal: Object.keys(normalFlights).length,
+        nearbyTotal: Object.keys(nearbyFlights).length,
+        total: Object.keys(normalFlights).length + Object.keys(nearbyFlights).length
     };
 }
 
@@ -185,11 +160,49 @@ function searchCtripInfoMain() {
                 sleep(3000);
                 load();
                 sleep(1000);
-                let result = extractFlights();
+                
+                // 整合各个函数的结果
+                let flightsResult = extractFlights();
+                let trainResult = extractTrainOptions();
+                let transferResult = extractTransferOptions();
+                let nearbyResult = extractNearbyOptions();
+                let airTrainResult = extractAirTrainOptions();
+                
+                // 整合所有结果
+                let result = {
+                    status: "success",
+                    message: "携程搜索完成",
+                    searchInfo: searchInfo,
+                    flights: {
+                        normalFlights: flightsResult.normalFlights,
+                        nearbyFlights: flightsResult.nearbyFlights,
+                        normalTotal: flightsResult.normalTotal,
+                        nearbyTotal: flightsResult.nearbyTotal,
+                        total: flightsResult.total
+                    },
+                    trainOptions: trainResult,
+                    transferOptions: transferResult,
+                    nearbyOptions: nearbyResult,
+                    airTrainOptions: airTrainResult,
+                    // 计算总方案数
+                    totalOptions: (flightsResult.total || 0) + 
+                                 (trainResult.total || 0) + 
+                                 (transferResult.total || 0) + 
+                                 (nearbyResult.total || 0) + 
+                                 (airTrainResult.total || 0)
+                };
+                
                 let endTime = Date.now();
                 let totalDuration = endTime - startTime;
                 
-                uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索完成，搜索内容: ${searchInfo}，找到 ${result.flights.length} 条航班信息-${JSON.stringify(result.flights)}，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
+                // 构建详细的日志信息
+                let logMessage = `携程搜索完成，搜索内容: ${searchInfo}，找到 ${result.totalOptions} 个方案 - ` +
+                               `普通航班: ${flightsResult.normalTotal}，临近航班: ${flightsResult.nearbyTotal}，` +
+                               `火车方案: ${trainResult.total || 0}，中转方案: ${transferResult.total || 0}，` +
+                               `临近推荐: ${nearbyResult.total || 0}，空铁方案: ${airTrainResult.total || 0}，` +
+                               `总耗时: ${totalDuration}ms`;
+                
+                uploadLog("search_ctrip_cn_ticket-20250911173437822", logMessage, totalDuration, testLogUrl);
                 console.log(JSON.stringify(result, null, 2));
                 return result;
                 
@@ -203,7 +216,12 @@ function searchCtripInfoMain() {
                     let errorResult = {
                         status: "error",
                         message: "超过最大重试次数，自动退出",
-                        flights: []
+                        totalOptions: 0,
+                        flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
+                        trainOptions: { status: "error", total: 0, details: [] },
+                        transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
+                        nearbyOptions: { status: "error", total: 0, flights: [] },
+                        airTrainOptions: { status: "error", total: 0, airTrainList: [] }
                     };
                     uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: 超过最大重试次数，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
                     toastLog("超过最大重试次数，自动退出");
@@ -220,7 +238,12 @@ function searchCtripInfoMain() {
                     let errorResult = {
                         status: "error",
                         message: "超过最大重试次数，自动退出",
-                        flights: []
+                        totalOptions: 0,
+                        flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
+                        trainOptions: { status: "error", total: 0, details: [] },
+                        transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
+                        nearbyOptions: { status: "error", total: 0, flights: [] },
+                        airTrainOptions: { status: "error", total: 0, airTrainList: [] }
                     };
                     uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: 超过最大重试次数，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
                     toastLog("超过最大重试次数，自动退出");
@@ -236,7 +259,12 @@ function searchCtripInfoMain() {
         let errorResult = {
             status: "error",
             message: `搜索过程中发生错误: ${e.message}`,
-            flights: []
+            totalOptions: 0,
+            flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
+            trainOptions: { status: "error", total: 0, details: [] },
+            transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
+            nearbyOptions: { status: "error", total: 0, flights: [] },
+            airTrainOptions: { status: "error", total: 0, airTrainList: [] }
         };
         uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: ${e.message}，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
         console.error("搜索失败:", e);
@@ -292,33 +320,19 @@ function load(){
  */
 function extractTrainOptions() {
     let trainDetails = [];
-    let trainMap = new Map(); // 用于存储每个索引的最新记录
+    let trainMap = new Map(); 
     
     try {
-        let departureTimeControls = descContains("出发时间").find();
+        let controls = descMatches(/^(\d+)出发日期$/).find();
         
-        for (let i = 0; i < departureTimeControls.length; i++) {
-            let departureControl = departureTimeControls[i];
-            let desc = departureControl.desc();
-            let text = departureControl.text();
-            
-            // 匹配出发时间控件描述，提取索引
-            let trainMatch = desc.match(/(\d+)出发时间/);
-            if (!trainMatch) {
-                continue;
-            }
-            
-            let index = parseInt(trainMatch[1]);
-            
-    
-            
-            // 获取父控件
-            let parentControl = departureControl.parent();
-            if (!parentControl) {
-                continue;
-            }
-            
-            // 从父控件的子控件中提取信息
+        for (let i = 0; i < controls.length; i++) {
+            let control = controls[i];
+            let desc = control.desc();
+            let text = control.text();
+
+            let index = desc.replace('出发日期', '');
+            let parentControl = control.parent();
+
             let children = parentControl.children();
             
              let trainInfo = {
@@ -424,7 +438,7 @@ function extractTrainOptions() {
         total: trainDetails.length,
         details: trainDetails
     };
-    console.log("火车方案提取结果:", JSON.stringify(trainResult, null, 2));
+    // console.log("火车方案提取结果:", JSON.stringify(trainResult, null, 2));
     return trainResult;
 }
 
@@ -451,7 +465,7 @@ function extractTransferOptions() {
                 
                 // 提取航班号
                 let flightCode = baseDesc.replace(/^第(.+)航班$/, "$1");
-                console.log("提取的航班号:", flightCode); 
+                // console.log("提取的航班号:", flightCode); 
 
                 let flightInfo = {
                     flightCode: flightCode,
@@ -599,165 +613,142 @@ function extractTransferOptions() {
         stopoverFlights: stopoverFlights,
         total: transferFlights.length + stopoverFlights.length
     };
-    console.log(JSON.stringify(transferResult, null, 2));
+    // console.log(JSON.stringify(transferResult, null, 2));
     return transferResult;
 }
 
 /**
- * 提取临近推荐方案信息
+ * 提取临近推荐方案信息-邻近城市&临近日期
  * @returns {Object} 临近推荐方案列表
  */
 function extractNearbyOptions() {
-    let controlsInfo = getAllControlsInfo();
-    
-    if (!controlsInfo.hasControls) {
-        return {
-            status: "no_controls",
-            message: controlsInfo.message,
-            options: []
-        };
-    }
+    let nearbyList = [];
+    try {
+        let controlsInfo = getAllControlsInfo();
+        if (!controlsInfo.hasControls) {
+            return {
+                status: "no_controls",
+                message: controlsInfo.message,
+                total: 0,
+                flights: []
+            };
+        }
 
-    let allControls = controlsInfo.controls;
+        let allControls = controlsInfo.controls;
 
-    // 1. 提取临近推荐方案概览
-    let nearbyOverview = null;
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-
-            // 匹配临近推荐方案
-            if (desc.includes("中转推荐tab_名称3") && text.includes("临近推荐")) {
-                let priceControl = allControls.find(control => 
-                    control.desc() && control.desc().includes("中转推荐tab_价格3")
-                );
-                nearbyOverview = {
-                    type: "临近推荐",
-                    name: text,
-                    price: priceControl ? priceControl.text() : null
-                };
+        // “中转NearbyFlightDetail换乘城市快筛列表”作为邻近航班区块起点
+        let startIndex = -1;
+        for (let i = 0; i < allControls.length; i++) {
+            let d = allControls[i].desc || "";
+            if (d && d.includes("中转NearbyFlightDetail换乘城市快筛列表")) {
+                startIndex = i;
                 break;
             }
-        } catch (e) {
-            // 忽略单个控件错误
         }
-    }
 
-    // 2. 提取临近城市信息
-    let nearbyCities = [];
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
+        if (startIndex === -1) {
+            return {
+                status: "not_found",
+                message: "未定位到邻近航班起点控件",
+                total: 0,
+                flights: []
+            };
+        }
 
-            if (desc.includes("邻近城市")) {
-                if (text.includes("¥") && text.includes("起")) {
-                    let cityInfo = {
-                        route: text.split(" ¥")[0],
-                        price: text.split("¥")[1],
-                        isSelected: desc.includes("已选")
+        // 2) 设定一个保守的边界：遇到“空铁政策”等下一个分段标记即停止
+        let endIndex = allControls.length - 1;
+        for (let i = startIndex + 1; i < allControls.length; i++) {
+            let d = allControls[i].desc || "";
+            // 可按需扩展更多边界标记
+            if (d.includes("空铁政策") || d.includes("空铁联运") || d.includes("AirTrain")) {
+                endIndex = i - 1;
+                break;
+            }
+        }
+
+        // 3) 在(startIndex, endIndex]范围内，按“第([A-Z0-9]+)航班”提取信息
+        let flightsMap = {};
+        for (let i = startIndex + 1; i <= endIndex; i++) {
+            try {
+                let item = allControls[i];
+                let desc = item.desc || "";
+                let text = item.text || "";
+
+                let match = desc.match(/第([A-Z0-9]+)航班/);
+                if (!match) continue;
+                let code = match[1];
+
+                if (!flightsMap[code]) {
+                    flightsMap[code] = {
+                        flgno: code,
+                        airline: null,
+                        departureTime: null,
+                        arrivalTime: null,
+                        nextDayInfo: null,
+                        departureAirport: null,
+                        arrivalAirport: null,
+                        flightDuration: null,
+                        transferCities: [],
+                        price: null,
+                        isNearby: true
                     };
-                    nearbyCities.push(cityInfo);
                 }
+
+                let f = flightsMap[code];
+                if (desc.includes("出发时间")) f.departureTime = text;
+                if (desc.includes("到达时间")) f.arrivalTime = text;
+                if (desc.includes("隔天信息")) f.nextDayInfo = text;
+                if (desc.includes("出发机场")) f.departureAirport = text;
+                if (desc.includes("到达机场")) f.arrivalAirport = text;
+                if (desc.includes("飞行时长")) f.flightDuration = text;
+                if (desc.includes("价格")) f.price = text;
+                if (desc.includes("中转城市")) f.transferCities.push(text);
+            } catch (e) {
+                // 忽略单个控件错误
             }
-        } catch (e) {
-            // 忽略单个控件错误
         }
-    }
 
-    // 3. 提取具体临近航班信息
-    let nearbyFlights = [];
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-
-            // 匹配临近航班信息（单个航班号，不包含+号）
-            let flightMatch = desc.match(/第([A-Z0-9]+)航班/);
-            if (flightMatch && !desc.includes("+")) {
-                let flightCode = flightMatch[1];
-                let flightInfo = {
-                    flightCode: flightCode,
-                    departureTime: null,
-                    arrivalTime: null,
-                    departureAirport: null,
-                    arrivalAirport: null,
-                    cabinClass: null,
-                    airline: null,
-                    aircraftType: null,
-                    mealService: null,
-                    price: null
-                };
-
-                // 查找相关控件
-                for (let otherControl of allControls) {
-                    let otherDesc = otherControl.desc() || "";
-                    let otherText = otherControl.text() || "";
-
-                    if (otherDesc.includes(`${flightCode}航班出发时间`)) {
-                        flightInfo.departureTime = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班到达时间`)) {
-                        flightInfo.arrivalTime = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班出发机场+航站楼`)) {
-                        flightInfo.departureAirport = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班到达机场+航站楼`)) {
-                        flightInfo.arrivalAirport = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班舱等信息`)) {
-                        flightInfo.cabinClass = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班航司信息`)) {
-                        flightInfo.airline = otherText;
-                    } else if (otherDesc.includes(`${flightCode}航班价格标签`)) {
-                        flightInfo.price = otherText;
+        // 4) 单独处理航司名称：在范围内查找包含“航空/国航”的文本并回溯最近航班号
+        for (let i = startIndex + 1; i <= endIndex; i++) {
+            try {
+                let item = allControls[i];
+                let t = item.text || "";
+                if (!t) continue;
+                if (t.includes("航空") || t.includes("国航")) {
+                    for (let j = i; j >= startIndex + 1; j--) {
+                        let prev = allControls[j];
+                        let prevId = prev.id || "";
+                        let m = prevId.match(/第([A-Z0-9]+)航班/);
+                        if (m) {
+                            let code = m[1];
+                            if (flightsMap[code]) {
+                                flightsMap[code].airline = t;
+                            }
+                            break;
+                        }
                     }
                 }
-
-                // 查找机型和服务信息
-                for (let otherControl of allControls) {
-                    let otherText = otherControl.text() || "";
-                    if (otherText.includes("中机型") || otherText.includes("大机型") || otherText.includes("小机型")) {
-                        flightInfo.aircraftType = otherText;
-                    } else if (otherText.includes("有小食") || otherText.includes("无餐食") || otherText.includes("有餐食")) {
-                        flightInfo.mealService = otherText;
-                    }
-                }
-
-                nearbyFlights.push(flightInfo);
+            } catch (e) {
+                // 忽略单个控件错误
             }
-        } catch (e) {
-            // 忽略单个控件错误
         }
+
+        nearbyList = Object.values(flightsMap);
+        // console.log(nearbyList);
+        return {
+            status: "success",
+            message: "邻近航班提取完成",
+            total: nearbyList.length,
+            flights: nearbyList
+        };
+    } catch (e) {
+        return {
+            status: "error",
+            message: e.message,
+            total: 0,
+            flights: []
+        };
     }
-
-    // 4. 提取临近日期信息
-    let nearbyDates = [];
-    for (let c of allControls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-
-            if (desc.includes("临近日期") || (text.includes("9月") && text.includes("¥") && text.includes("起"))) {
-                let dateInfo = {
-                    date: text.split(" ¥")[0],
-                    price: text.split("¥")[1],
-                    isSelected: desc.includes("已选")
-                };
-                nearbyDates.push(dateInfo);
-            }
-        } catch (e) {
-            // 忽略单个控件错误
-        }
-    }
-
-    return {
-        status: "success",
-        message: "临近推荐方案提取完成",
-        overview: nearbyOverview,
-        nearbyCities: nearbyCities,
-        nearbyDates: nearbyDates,
-        total: nearbyFlights.length,
-        flights: nearbyFlights
-    };
 }
 
 /**
@@ -769,19 +760,22 @@ function extractAirTrainOptions() {
     try{
         let airTrainControls = descContains("空铁政策").find();
         for (let i = 0; i < airTrainControls.length; i++) {
-
+            let airTrainInfo = [];
             let parent = airTrainControls[i].parent();
+            let controls = parent.children();
 
-            
+            for (let j = 0; j < controls.length; j++) {
+                let control = controls[j];
+                let text = control.text();
+                
+                if (text != null && text.trim() != "") {
+                    airTrainInfo.push(text);
+                }
+            }
+            airTrainList.push(airTrainInfo);
         }
-        return {
-            status: "success",
-            message: "飞机+火车方案提取完成",
-            overview: airTrainOverview,
-            transferCities: transferCities,
-            total: airTrainList.length,
-            policies: airTrainList
-        };
+
+        // console.log("飞机+火车方案提取完成", JSON.stringify(airTrainList, null, 2));
     }catch (e) {
             // 忽略单个控件错误
         }
@@ -789,10 +783,8 @@ function extractAirTrainOptions() {
     return {
         status: "success",
         message: "飞机+火车方案提取完成",
-        overview: airTrainOverview,
-        transferCities: transferCities,
-        total: airTrainPolicies.length,
-        policies: airTrainPolicies
+        airTrainList: airTrainList,
+        total: airTrainList.length
     };
     
     }
@@ -803,73 +795,54 @@ function extractAirTrainOptions() {
  * @returns {Object} 所有方案的综合信息
  */
 function getAllOptions() {
-    console.log("=== 开始提取所有方案信息 ===");
     
-    // 统一获取控件信息，避免重复匹配
-    let controlsInfo = getAllControlsInfo();
-    
+    let flightsResult = extractFlights();
     let allOptions = {
-        flights: extractFlights(),
+        normalFlights: flightsResult.normalFlights,
+        nearbyFlights: flightsResult.nearbyFlights,
         trainOptions: extractTrainOptions(),
         transferOptions: extractTransferOptions(),
         nearbyOptions: extractNearbyOptions(),
         airTrainOptions: extractAirTrainOptions()
     };
 
+    // 汇总所有方案 total
+    try {
+        let sum = 0;
+        sum += flightsResult.normalTotal || 0;
+        sum += flightsResult.nearbyTotal || 0;
+        sum += (allOptions.trainOptions && typeof allOptions.trainOptions.total === "number") ? allOptions.trainOptions.total : 0;
+        sum += (allOptions.transferOptions && typeof allOptions.transferOptions.total === "number") ? allOptions.transferOptions.total : 0;
+        sum += (allOptions.nearbyOptions && typeof allOptions.nearbyOptions.total === "number") ? allOptions.nearbyOptions.total : 0;
+        sum += (allOptions.airTrainOptions && typeof allOptions.airTrainOptions.total === "number") ? allOptions.airTrainOptions.total : 0;
+        allOptions.total = sum;
+        console.log("所有方案总数:", sum);
+    } catch (e) {
+        console.log("汇总总数发生错误:", e.message);
+        allOptions.total = 0;
+    }
 
     console.log("\n=== 详细方案信息 ===");
-    console.log("机票方案:", JSON.stringify(allOptions.flights, null, 2));
+    console.log("普通航班方案:", JSON.stringify(allOptions.normalFlights, null, 2));
+    console.log("临近航班方案:", JSON.stringify(allOptions.nearbyFlights, null, 2));
     console.log("火车方案:", JSON.stringify(allOptions.trainOptions, null, 2));
     console.log("飞机中转方案:", JSON.stringify(allOptions.transferOptions, null, 2));
     console.log("  - 中转航班:", JSON.stringify(allOptions.transferOptions.transferFlights, null, 2));
     console.log("  - 经停航班:", JSON.stringify(allOptions.transferOptions.stopoverFlights, null, 2));
-    console.log("临近推荐方案:", JSON.stringify(allOptions.nearbyOptions, null, 2));
+    // console.log("临近推荐方案:", JSON.stringify(allOptions.nearbyOptions, null, 2));
     console.log("飞机+火车方案:", JSON.stringify(allOptions.airTrainOptions, null, 2));
 
     return allOptions;
 }
 
-/**
- * 调试函数：打印所有控件的详细信息
- */
-function debugAllControls() {
-    console.log("=== 开始调试所有控件 ===");
-    let controlsInfo = getAllControlsInfo();
-    
-    if (!controlsInfo.hasControls) {
-        console.log(controlsInfo.message);
-        return;
-    }
-
-    console.log(`总共找到 ${controlsInfo.total} 个控件`);
-    
-    for (let c of controlsInfo.controls) {
-        try {
-            let desc = c.desc;
-            let text = c.text;
-            let id = c.id;
-            
-            if (desc || text || id) {
-                console.log(`控件 ${c.index}:`);
-                console.log(`  描述: ${desc}`);
-                console.log(`  文本: ${text}`);
-                console.log(`  ID: ${id}`);
-                if (c.bounds) {
-                    console.log(`  位置: (${c.bounds.left}, ${c.bounds.top}, ${c.bounds.right}, ${c.bounds.bottom})`);
-                }
-                console.log("---");
-            }
-        } catch (e) {
-            console.log(`控件 ${c.index} 解析错误: ${e.message}`);
-        }
-    }
-}
-
 // searchCtripInfoMain();
 
 // 测试
-load();
+// load();
 // getAllOptions();
-// extractTrainOptions();
+// extractFlights();
+
+extractTrainOptions();
 // extractTransferOptions();
-extractNearbyOptions();
+
+// extractAirTrainOptions();

@@ -1,5 +1,4 @@
 function extractFlightDetail(){
-    let allControls = classNameMatches(/.*/).find();
     let flightData = {
         basicInfo: {
             segments: []  // 多程航班信息
@@ -8,14 +7,6 @@ function extractFlightDetail(){
         priceCalendar: {},
         services: []
     };
-
-    if (!allControls || allControls.length === 0) {
-        return {
-            status: "no_controls",
-            message: "未找到detail控件",
-            data: flightData
-        };
-    }
 
     // 提取基本信息
     for (let c of allControls) {
