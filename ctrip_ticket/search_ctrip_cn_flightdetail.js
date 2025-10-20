@@ -1,4 +1,17 @@
+let testLogUrl = "http://10.41.20.223:8020/ws/result";
+
+function uploadLog(task_id, result, duration, testlogUrl) {
+    const data = {
+        task_id: task_id,
+        result: result,
+        duration: duration,
+    };
+    
+    http.postJson(testlogUrl, data);
+}
 function extractFlightDetail(){
+    let allControls = classNameMatches(/.*/).find();
+    
     let flightData = {
         basicInfo: {
             segments: []  // 多程航班信息
@@ -7,6 +20,14 @@ function extractFlightDetail(){
         priceCalendar: {},
         services: []
     };
+
+    if (!allControls || allControls.length === 0) {
+        return {
+            status: "no_controls",
+            message: "未找到detail控件",
+            data: flightData
+        };
+    }
 
     // 提取基本信息
     for (let c of allControls) {
@@ -295,6 +316,84 @@ function extractSegmentIndex(desc) {
 }
 
 // 调用函数
-let result = extractFlightDetail();
-console.log("=== 携程机票详情提取结果 ===");
-console.log(JSON.stringify(result, null, 2));
+// let result = extractFlightDetail();
+// console.log("=== 携程机票详情提取结果 ===");
+// console.log(JSON.stringify(result, null, 2));
+function ismainpage(){
+    return text("搜索").exists();
+}
+
+function searchCtripInfo(info) {
+    click(305,785);
+    click(310,750);
+    sleep(1500);
+    
+    // 输入搜索文本
+    input(info);
+    sleep(1000);
+
+    click(986,2116);
+}
+
+function load(){
+    let control = className("android.widget.ImageView").desc("list_section_title_img").findOne(1000);
+    while(!control){
+        swipe(
+            device.width / 2,
+            device.height * 0.8,
+            device.width / 2,
+            device.height * 0.2,
+            200
+        );
+        control = className("android.widget.ImageView").desc("list_section_title_img").findOne(1000);
+    }
+    console.log("find");
+    return true;
+}
+
+function searchCtripDetailMain() {
+    let startTime = Date.now();
+    let info = "北京到上海的机票";
+    let retryCount = 0;
+    const maxRetries = 3;
+    try{
+        while(true) {
+            if(ismainpage()){
+                searchCtripInfo(info);
+                sleep(3000);
+                load();
+                sleep(1000);
+                let result = extractFlightDetail();
+                let endTime = Date.now();
+                let totalDuration = endTime - startTime;
+
+                let logMessage = `携程机票详情搜索完成，搜索内容: ${info}，总耗时: ${totalDuration}ms`;
+                uploadLog("task_id", logMessage, totalDuration, testLogUrl);
+                console.log(JSON.stringify(result, null, 2));
+                return result;
+            }else if(isMask()){
+                autoOut();
+                sleep(2000);
+                retryCount++;
+                if(retryCount > maxRetries) {
+                    return errorResult;
+                }
+                sleep(2000);
+                continue;
+            }
+        }
+    }catch(e){
+        let endTime = Date.now();
+        let totalDuration = endTime - startTime;
+        let errorResult = {
+            status: "error",
+            message: `搜索过程中发生错误: ${e.message}`
+        };
+        uploadLog("task_id", `携程机票详情搜索失败: ${e.message}，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
+        console.error("机票详情搜索失败:", e);
+        return errorResult;
+    }
+}
+
+//start
+searchCtripDetailMain();

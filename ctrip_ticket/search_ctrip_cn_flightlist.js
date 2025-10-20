@@ -1,5 +1,5 @@
 
-let testLogUrl = "http://10.41.17.48:8020/ws/result";
+let testLogUrl = "http://10.41.20.223:8020/ws/result";
 
 function uploadLog(task_id, result, duration, testlogUrl) {
     const data = {
@@ -133,8 +133,8 @@ function extractFlights() {
     }
     
     //调试信息
-    console.log("normalFlights:",JSON.stringify(normalFlights, null, 2));
-    console.log("nearbyFlights:",JSON.stringify(nearbyFlights, null, 2));
+    // console.log("normalFlights:",JSON.stringify(normalFlights, null, 2));
+    // console.log("nearbyFlights:",JSON.stringify(nearbyFlights, null, 2));
 
     return {
         status: "success",
@@ -165,7 +165,6 @@ function searchCtripInfoMain() {
                 let flightsResult = extractFlights();
                 let trainResult = extractTrainOptions();
                 let transferResult = extractTransferOptions();
-                let nearbyResult = extractNearbyOptions();
                 let airTrainResult = extractAirTrainOptions();
                 
                 // 整合所有结果
@@ -182,24 +181,21 @@ function searchCtripInfoMain() {
                     },
                     trainOptions: trainResult,
                     transferOptions: transferResult,
-                    nearbyOptions: nearbyResult,
                     airTrainOptions: airTrainResult,
                     // 计算总方案数
                     totalOptions: (flightsResult.total || 0) + 
                                  (trainResult.total || 0) + 
                                  (transferResult.total || 0) + 
-                                 (nearbyResult.total || 0) + 
                                  (airTrainResult.total || 0)
                 };
                 
                 let endTime = Date.now();
                 let totalDuration = endTime - startTime;
-                
-                // 构建详细的日志信息
+            
                 let logMessage = `携程搜索完成，搜索内容: ${searchInfo}，找到 ${result.totalOptions} 个方案 - ` +
                                `普通航班: ${flightsResult.normalTotal}，临近航班: ${flightsResult.nearbyTotal}，` +
                                `火车方案: ${trainResult.total || 0}，中转方案: ${transferResult.total || 0}，` +
-                               `临近推荐: ${nearbyResult.total || 0}，空铁方案: ${airTrainResult.total || 0}，` +
+                               `空铁方案: ${airTrainResult.total || 0}，` +
                                `总耗时: ${totalDuration}ms`;
                 
                 uploadLog("search_ctrip_cn_ticket-20250911173437822", logMessage, totalDuration, testLogUrl);
@@ -220,7 +216,6 @@ function searchCtripInfoMain() {
                         flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
                         trainOptions: { status: "error", total: 0, details: [] },
                         transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
-                        nearbyOptions: { status: "error", total: 0, flights: [] },
                         airTrainOptions: { status: "error", total: 0, airTrainList: [] }
                     };
                     uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: 超过最大重试次数，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
@@ -242,7 +237,6 @@ function searchCtripInfoMain() {
                         flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
                         trainOptions: { status: "error", total: 0, details: [] },
                         transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
-                        nearbyOptions: { status: "error", total: 0, flights: [] },
                         airTrainOptions: { status: "error", total: 0, airTrainList: [] }
                     };
                     uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: 超过最大重试次数，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
@@ -263,7 +257,6 @@ function searchCtripInfoMain() {
             flights: { normalFlights: [], nearbyFlights: [], normalTotal: 0, nearbyTotal: 0, total: 0 },
             trainOptions: { status: "error", total: 0, details: [] },
             transferOptions: { status: "error", total: 0, transferFlights: [], stopoverFlights: [] },
-            nearbyOptions: { status: "error", total: 0, flights: [] },
             airTrainOptions: { status: "error", total: 0, airTrainList: [] }
         };
         uploadLog("search_ctrip_cn_ticket-20250911173437822", `携程搜索失败: ${e.message}，总耗时: ${totalDuration}ms`, totalDuration, testLogUrl);
@@ -299,20 +292,15 @@ function autoOut(){
 
 
 function load(){
-    let control = className("android.widget.ImageView").desc("list_section_title_img").findOne(1000);
+    let control = desc("底部服务保障").findOne(500);
     while(!control){
-        swipe(
-            device.width / 2,
-            device.height * 0.8,
-            device.width / 2,
-            device.height * 0.2,
-            200
-        );
-        control = className("android.widget.ImageView").desc("list_section_title_img").findOne(1000);
+        gestures([0,1000, [514, 2137], [514, 1600]],[0,500, [514, 1600], [514, 200]]);
+        control = desc("底部服务保障").findOne(500);
     }
     console.log("find");
     return true;
 }
+
   
 /**
  * 提取火车方案信息 - 基于子控件信息提取
@@ -337,7 +325,7 @@ function extractTrainOptions() {
             
              let trainInfo = {
                  index: index,
-                 departureTime: text && text.trim() ? text : null,
+                 departureTime: null,
                  departureStation: null,
                  arrivalTime: null,
                  arrivalStation: null,
@@ -355,7 +343,9 @@ function extractTrainOptions() {
                 let childText = child.text();
                 
                  try {
-                     if (childDesc === `${index}出发站点` && childText && childText.trim()) {
+                     if (childDesc === `${index}出发时间` && childText && childText.trim()) {
+                         trainInfo.departureTime = childText;
+                     } else if (childDesc === `${index}出发站点` && childText && childText.trim()) {
                          trainInfo.departureStation = childText;
                      } else if (childDesc === `${index}中转时长` && childText && childText.trim()) {
                          trainInfo.duration = childText;
@@ -379,25 +369,45 @@ function extractTrainOptions() {
                             // 座位类型名称（去掉状态信息）
                             let seatType = childText.replace(/\s*有票|\s*\d+张|\s*抢|\s*\(换座\)/g, "").trim();
                             
-                            // 查找下一个子控件作为状态信息
+                            // 查找后续1-2个子控件作为状态信息
                             let status = "有票"; // 默认状态
+                            let skipCount = 0;
+                            
+                            // 检查下一个控件
                             if (j + 1 < children.length) {
                                 let nextChild = children[j + 1];
                                 let nextChildText = nextChild.text();
                                 let nextChildDesc = nextChild.desc();
                                 
-                                // 如果下一个子控件也是desc为null且包含状态信息
                                 if (nextChildDesc === null && nextChildText && nextChildText.trim()) {
                                     if (nextChildText.includes("有票") || nextChildText.includes("张") || 
-                                        nextChildText.includes("抢") || nextChildText.includes("换座")) {
+                                        nextChildText.includes("抢") || nextChildText.includes("换座") ||
+                                        nextChildText.includes("(") || nextChildText.includes(")")) {
                                         status = nextChildText.trim();
-                                        // 跳过下一个子控件，避免重复处理
-                                        j++;
+                                        skipCount = 1;
+                                        
+                                        // 检查再下一个控件
+                                        if (j + 2 < children.length) {
+                                            let nextNextChild = children[j + 2];
+                                            let nextNextChildText = nextNextChild.text();
+                                            let nextNextChildDesc = nextNextChild.desc();
+                                            
+                                            if (nextNextChildDesc === null && nextNextChildText && nextNextChildText.trim()) {
+                                                if (nextNextChildText.includes("张") || nextNextChildText.includes("有票") || 
+                                                    nextNextChildText.includes("抢")) {
+                                                    status += " " + nextNextChildText.trim();
+                                                    skipCount = 2;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                             
-                            // 检查是否已经添加过这个座位类型
+                            // 跳过已处理控件
+                            j += skipCount;
+                            
+                            // 添加座位类型
                             let existingSeat = trainInfo.seatTypes.find(s => s.type === seatType);
                             if (!existingSeat && seatType) {
                                 trainInfo.seatTypes.push({
@@ -412,14 +422,12 @@ function extractTrainOptions() {
                 }
             }
             
-            // 直接覆盖同索引的记录（保留最后一个，即第二个）
+            // 覆盖同索引的记录
             trainMap.set(index, trainInfo);
         }
         
-        // 将Map中的值转换为数组
         trainDetails = Array.from(trainMap.values());
         
-        // 按索引排序
         trainDetails.sort((a, b) => a.index - b.index);
         
     } catch (e) {
@@ -758,7 +766,7 @@ function extractNearbyOptions() {
 function extractAirTrainOptions() {
     let airTrainList = [];
     try{
-        let airTrainControls = descContains("空铁政策").find();
+        let airTrainControls = descStartsWith("空铁政策").descEndsWith("中转城市").find();
         for (let i = 0; i < airTrainControls.length; i++) {
             let airTrainInfo = [];
             let parent = airTrainControls[i].parent();
@@ -802,7 +810,6 @@ function getAllOptions() {
         nearbyFlights: flightsResult.nearbyFlights,
         trainOptions: extractTrainOptions(),
         transferOptions: extractTransferOptions(),
-        nearbyOptions: extractNearbyOptions(),
         airTrainOptions: extractAirTrainOptions()
     };
 
@@ -813,7 +820,6 @@ function getAllOptions() {
         sum += flightsResult.nearbyTotal || 0;
         sum += (allOptions.trainOptions && typeof allOptions.trainOptions.total === "number") ? allOptions.trainOptions.total : 0;
         sum += (allOptions.transferOptions && typeof allOptions.transferOptions.total === "number") ? allOptions.transferOptions.total : 0;
-        sum += (allOptions.nearbyOptions && typeof allOptions.nearbyOptions.total === "number") ? allOptions.nearbyOptions.total : 0;
         sum += (allOptions.airTrainOptions && typeof allOptions.airTrainOptions.total === "number") ? allOptions.airTrainOptions.total : 0;
         allOptions.total = sum;
         console.log("所有方案总数:", sum);
@@ -822,15 +828,12 @@ function getAllOptions() {
         allOptions.total = 0;
     }
 
-    console.log("\n=== 详细方案信息 ===");
-    console.log("普通航班方案:", JSON.stringify(allOptions.normalFlights, null, 2));
-    console.log("临近航班方案:", JSON.stringify(allOptions.nearbyFlights, null, 2));
-    console.log("火车方案:", JSON.stringify(allOptions.trainOptions, null, 2));
-    console.log("飞机中转方案:", JSON.stringify(allOptions.transferOptions, null, 2));
-    console.log("  - 中转航班:", JSON.stringify(allOptions.transferOptions.transferFlights, null, 2));
-    console.log("  - 经停航班:", JSON.stringify(allOptions.transferOptions.stopoverFlights, null, 2));
-    // console.log("临近推荐方案:", JSON.stringify(allOptions.nearbyOptions, null, 2));
-    console.log("飞机+火车方案:", JSON.stringify(allOptions.airTrainOptions, null, 2));
+    console.log("\n=== list ===");
+    console.log("NormalFlights:", JSON.stringify(allOptions.normalFlights, null, 2));
+    console.log("NearbyFlights:", JSON.stringify(allOptions.nearbyFlights, null, 2));
+    console.log("TrainOptions:", JSON.stringify(allOptions.trainOptions, null, 2));
+    console.log("TransferOptions:", JSON.stringify(allOptions.transferOptions, null, 2));
+    console.log("AirTrainOptions:", JSON.stringify(allOptions.airTrainOptions, null, 2));
 
     return allOptions;
 }
@@ -838,11 +841,11 @@ function getAllOptions() {
 // searchCtripInfoMain();
 
 // 测试
-// load();
+load();
 // getAllOptions();
 // extractFlights();
 
-extractTrainOptions();
+// extractTrainOptions();
 // extractTransferOptions();
 
 // extractAirTrainOptions();

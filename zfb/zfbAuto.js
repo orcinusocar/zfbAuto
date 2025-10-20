@@ -21,14 +21,14 @@ function random(min, max) {
 
 // 随机自动刷视频
 function autoSwipe() {
-    // 随机滑动参数（增大滑动距离）
-    let startY = random(device.height * 0.8, device.height * 0.9);  // 起始点更靠下
-    let endY = random(device.height * 0.1, device.height * 0.2);    // 结束点更靠上
-    let duration = random(1000, 1500);                              // 延长滑动时间
+    // 随机滑动参数
+    let startY = random(device.height * 0.8, device.height * 0.9);  
+    let endY = random(device.height * 0.1, device.height * 0.2);    
+    let duration = random(1000, 1500);                              
 
     // 模拟带随机弧度的滑动
     swipe(
-        device.width / 2 + random(-100, 100),  // 横向偏移范围从 -100 到 100
+        device.width / 2 + random(-100, 100),  
         startY,
         device.width / 2 + random(-100, 100),
         endY,
@@ -38,11 +38,12 @@ function autoSwipe() {
 }
 
 function watchVideo(){
-    // 模拟观看视频（随机停留时间）
+    // 模拟观看视频
     sleep(random(5000, 10000));
 }   
 
 function autoOutLive(){
+  
     // 滑动参数：从 (x1, y) 到 (x2, y)，持续 duration 毫秒
     let screenWidth = device.width;
     let screenHeight = device.height;
