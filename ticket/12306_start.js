@@ -1189,10 +1189,11 @@ function doLogin(name, password, smscode) {
     var isGoToLoginPage = false
     for(var i = 0; i < views.size(); i++) {
         var tv = views.get(i)
+        var notLoginBtn = className("android.widget.Button").text("未登录,点击去登录").findOne(timeout)
         if(tv.id() == "vmc-titlebar-inner") {
             console.log("找到账号信息区域，点击后进入登录界面")
-            if(tv.childCount() >= 1) {
-                myCustomClick(tv.child(0))
+            if(notLoginBtn != null) {
+                myCustomClick(notLoginBtn)
             } 
             isGoToLoginPage = true
             sleep((random() + random(2, 5)) * 100)
@@ -3120,10 +3121,11 @@ function doQueryAndSelectTrain() {
     sleep((random() + random(2, 5)) * 200)
     // className("android.widget.Button").text("直达").waitFor()
     // var zhida = detectWidgetItem("text", "直达", "error", 100)
-    var zhida = detectWidgetItemWithChainClassnameTextcontains("android.widget.Button", "直达", "error", 100 * 2)
+    var zhida = detectWidgetItemWithChainClassnameTextcontains("android.view.View", "直达", "error", 100 * 2)
     if(zhida == null) {
         return 19
     } 
+    console.log("zhida: find")
     sleep((random() + random(2, 5)) * 100)
     // 查找超时
     // var trainButton = className("android.widget.Button").textContains(theTrainFormat).textContains(arriveStaName + ",").findOne(timeout * 10);
@@ -3131,6 +3133,7 @@ function doQueryAndSelectTrain() {
     // D 7 9 3 3次列车15点12分从双鸭山西出发18点9分到达哈  尔  滨,历时2时57分,
     // todo  三 亚 有空格
     // var trainButton = detectWidgetItemWithChainClassnameTextcontainsTextcontainsTextcontains("android.widget.Button", theTrainFormat + "次", "从" + departStaName + "出发" ,"到达" + arriveStaName.slice(0,1), arriveStaName.slice(1) + ",历时", "error", 100)
+    console.log(theTrainFormat)
     var trainButton = detectWidgetItemWithChainClassnameTextcontainsTextcontainsTextcontains("android.widget.Button", theTrainFormat + "次", "从" + departStaName + "出发" ,"到达" + arriveStaShorcut + ",历时", "error", 100)
     if(trainButton != null && trainButton.bounds().height() <= 20) {
         //不可见
