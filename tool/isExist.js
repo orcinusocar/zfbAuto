@@ -3,7 +3,7 @@ const timeout = 1000
 
 // 检测登录相关元素
 function checkLoginElements() {
-    console.log("=== 开始检测登录等相关元素 ===")
+    console.log("=== 开始检测元素是否存在 ===")
     
     // 检测账号输入框
     // var nameInput = className("android.widget.EditText").findOne(timeout * 2)
@@ -33,7 +33,7 @@ function checkLoginElements() {
     
     
     // 检测其他可能的登录按钮
-    var buttons = className("android.widget.Button").find()
+    var buttons = className("android.widget.EditText").find()
     console.log("找到", buttons.size(), "个Button控件")
     for(var i = 0; i < buttons.size(); i++) {
         var btn = buttons.get(i)

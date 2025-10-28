@@ -1,7 +1,7 @@
 // 12306_test.js - 基础功能测试脚本
 const testConfig = {
     baseUrl: "http://127.0.0.1:38080",
-    testTimeout: 300000,  // 增加到5分钟
+    testTimeout: 300000,  
     retryCount: 3
 };
 
@@ -42,34 +42,34 @@ const testCases = {
     //     data: {
     //         id: "test_login_" + Date.now(),
     //         login: {
-    //             username: "test_user",
-    //             password: "test_password",
+    //             username: "user",
+    //             password: "password123",
     //             smscode: ""
     //         }
     //     }
     // },
     
-    // 订票测试 - 格式1
+    // 订票测试
     order1: {
         url: "/order",
         method: "POST", 
         data: {
             id: "test_order_" + Date.now(),
             query: {
-                depart_station: "北京南",
-                arrive_station: "上海虹桥",
-                depart_date: "2025-11-03"
+                depart_station: "周口东",
+                arrive_station: "郑州东",
+                depart_date: "2025-10-31"
             },
             order: {
-                code: "G103",
+                code: "G1318",
                 passengers: [{
-                    passenger_name: "test",
+                    passenger_name: "曾粤扬",
                     identity_type: "1",
-                    identity_no: "test", 
+                    identity_no: "4401***********34X", 
                     passenger_type: "1"
                 }],
-                seat_no: ["1A"],
-                seat_type_code: "M",
+                seat_no: ["1D"],
+                seat_type_code: "0",
                 has_seat: true,
                 is_pay_by_point: false
             }
@@ -112,7 +112,7 @@ function runTest(testName, testCase) {
     const endTime = Date.now();
     
     if (!response) {
-        console.error(`❌ 测试失败: ${testName} - 请求无响应`);
+        console.error(`测试失败: ${testName} - 请求无响应`);
         return false;
     }
     
@@ -128,20 +128,20 @@ function runTest(testName, testCase) {
                             responseData.msg === testCase.expectedResponse.msg;
             
             if (isSuccess) {
-                console.log(`✅ 测试通过: ${testName}`);
+                console.log(`测试通过: ${testName}`);
                 return true;
             } else {
-                console.error(`❌ 测试失败: ${testName} - 响应不匹配`);
+                console.error(`测试失败: ${testName} - 响应不匹配`);
                 console.error(`期望: ${JSON.stringify(testCase.expectedResponse)}`);
                 console.error(`实际: ${JSON.stringify(responseData)}`);
                 return false;
             }
         } else {
-            console.log(`✅ 测试完成: ${testName} - 无预期结果验证`);
+            console.log(`测试完成: ${testName} - 无预期结果验证`);
             return true;
         }
     } catch (e) {
-        console.error(`❌ 测试失败: ${testName} - 响应解析错误: ${e}`);
+        console.error(`测试失败: ${testName} - 响应解析错误: ${e}`);
         return false;
     }
 }
@@ -165,7 +165,7 @@ function runTestWithRetry(testName, testCase, retryCount) {
 
 // 主测试函数
 function runAllTests() {
-    console.log("🚀 开始12306订票脚本测试");
+    console.log("开始12306订票脚本测试");
     console.log(`测试配置: ${JSON.stringify(testConfig, null, 2)}`);
     
     const results = {};
@@ -187,23 +187,23 @@ function runAllTests() {
     
     // 输出测试结果
     console.log("\n" + "=".repeat(50));
-    console.log("📊 测试结果汇总");
+    console.log("测试结果汇总");
     console.log("=".repeat(50));
     
     const resultEntries = Object.entries(results);
     for (let i = 0; i < resultEntries.length; i++) {
         let testName = resultEntries[i][0];
         let testResult = resultEntries[i][1];
-        console.log(`${testResult ? '✅' : '❌'} ${testName}: ${testResult ? '通过' : '失败'}`);
+        console.log(`${testResult ? '' : ''} ${testName}: ${testResult ? '通过' : '失败'}`);
     }
     
     console.log(`\n总计: ${passedTests}/${totalTests} 个测试通过`);
     console.log(`成功率: ${((passedTests / totalTests) * 100).toFixed(2)}%`);
     
     if (passedTests === totalTests) {
-        console.log("🎉 所有测试通过！");
+        console.log("所有测试通过！");
     } else {
-        console.log("⚠️  部分测试失败，请检查日志");
+        console.log("部分测试失败，请检查日志");
     }
     
     return results;
@@ -211,7 +211,7 @@ function runAllTests() {
 
 // 性能测试
 function performanceTest() {
-    console.log("\n🔬 开始性能测试");
+    console.log("\n开始性能测试");
     
     const testCount = 10;
     const times = [];
@@ -241,7 +241,7 @@ function performanceTest() {
 
 // 错误处理测试
 function errorHandlingTest() {
-    console.log("\n🚨 开始错误处理测试");
+    console.log("\n开始错误处理测试");
     
     const errorTests = [
         {
@@ -288,15 +288,15 @@ if (typeof module !== 'undefined' && module.exports) {
     try {
         const pingResponse = http.get(testConfig.baseUrl + "/ping");
         if (pingResponse && pingResponse.statusCode === 200) {
-            console.log("✅ 12306服务正在运行");
+            console.log("12306服务正在运行");
             runAllTests();
             // performanceTest();
             // errorHandlingTest();
         } else {
-            console.error("❌ 12306服务未运行，请先启动服务");
+            console.error("12306服务未运行，请先启动服务");
         }
     } catch (e) {
-        console.error("❌ 无法连接到12306服务:", e);
+        console.error("无法连接到12306服务:", e);
         console.log("请确保:");
         console.log("1. 12306_start.js 脚本正在运行");
         console.log("2. 服务监听端口 38080");

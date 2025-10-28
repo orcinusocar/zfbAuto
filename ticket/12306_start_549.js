@@ -2912,61 +2912,100 @@ function doPrepareQueryParameters() {
     // 出发站
     // var dep1 = id("home_page_train_dep1").findOne(timeout)
     sleep((random() + random(2, 4)) * 100)
-    var dep1 = detectWidgetItem("id", "home_page_train_dep1", "error", normal)
-    if(dep1 != null) {
-        // dep1.click()
-        // console.time("始发站")
-        sleep((random() + random(2, 4)) * 100)
-        myCustomClick(dep1)
-        // textContains("我的位置").waitFor();
-        // var chooseSatationPage = detectWidgetItemWithChainClassnameText("android.view.View", "热门车站", "error", normal)
-        // if(chooseSatationPage == null) {
-        //     return 3
-        // }
-        sleep((random() + random(3, 5)) * 100)
-        // className("android.widget.EditText").findOne(timeout).click()
-        // myCustomClick(className("android.widget.EditText").findOne(timeout))
-        var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
-        if(stationEdit == null) {
-            console.error("设置始发站时 没有找到文本文本编辑框")
-            sendOnlineLog("error", "设置始发站时 没有找到文本文本编辑框")
+    
+    // 始发站设置重试机制
+    var depRetryCount = 3
+    for (var retry = 0; retry < depRetryCount; retry++) {
+        var dep1 = detectWidgetItem("id", "home_page_train_dep1", "error", normal)
+        if(dep1 != null) {
+            // dep1.click()
+            // console.time("始发站")
+            sleep((random() + random(2, 4)) * 100)
+            myCustomClick(dep1)
+            // textContains("我的位置").waitFor();
+            // var chooseSatationPage = detectWidgetItemWithChainClassnameText("android.view.View", "热门车站", "error", normal)
+            // if(chooseSatationPage == null) {
+            //     return 3
+            // }
+            sleep((random() + random(3, 5)) * 100)
+            // className("android.widget.EditText").findOne(timeout).click()
+            // myCustomClick(className("android.widget.EditText").findOne(timeout))
+            
+            // 文本编辑框查找重试
+            var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
+            
+            if(stationEdit == null && dep1 == null) {
+                //始发站页面没加载出来
+                console.error("设置始发站时 没有找到文本文本编辑框")
+                sendOnlineLog("error", "设置始发站时 没有找到文本文本编辑框")
+                if (retry < depRetryCount - 1) {
+                    console.log("第" + (retry + 1) + "次始发站设置失败，重试...")
+                    back()
+                    sleep(1000)
+                    continue
+                }
+                return 3
+            }else if(stationEdit == null && dep1 != null) {
+                //仍在首页，重新进入始发站页面
+                console.log("进入始发站界面失败，重新点击设置始发站")
+                sendOnlineLog("error", "进入始发站界面失败，重新点击设置始发站")
+                continue
+            }else{
+                myCustomClick(stationEdit)
+            }
+            // sleep((random() + random(2, 5)) * 100)
+            // text("取消").waitFor()
+            
+            var cancelBtn = detectWidgetItem("text", "取消", "error", normal)
+            if(cancelBtn == null) {
+                console.error("设置始发站时 没有找到文本取消取消按钮")
+                sendOnlineLog("error", "设置始发站时 没有找到文本取消取消按钮")
+                back()
+                return 3
+            }
+            input(0, departStaName)
+            sleep((random() + random(2, 5)) * 100)
+            // className("android.widget.Button").textContains(departStaName).waitFor()
+            detectWidgetItemWithChainClassnameTextcontains("android.widget.Button", departStaName, "error", normal)
+            // textContains(departStaName).find().forEach(function(tv){    
+            //     // 北京, com.MobileTicket:id/home_page_train_dep1, android.widget.TextView, true, 出发站: 北京
+            //     // 北京--上海, null, android.widget.TextView, true, 根据查询历史将目的地切换为 北京  到 上海
+            //     // 北京, com.MobileTicket:id/tv_city, android.widget.TextView, false, null
+            //     console.log(tv.text() + ", " + tv.id() + ", " + tv.className() + ", " + tv.clickable() + ", " + tv.desc());
+            // });
+            
+            var sts = className("android.widget.Button").textContains("火车站 " + departStaName + "站").find()
+            if(sts.size() >= 1) {
+                // sts.get(0).click()
+                myCustomClick(sts.get(0))
+                isDepOk = true
+                break // 成功设置始发站，跳出重试循环
+            } else {
+                console.error("设置始发站时 没有找到车站按钮")
+                sendOnlineLog("error", "设置始发站时 没有找到车站按钮")
+                if (retry < depRetryCount - 1) {
+                    console.log("第" + (retry + 1) + "次始发站设置失败，返回重试...")
+                    back()
+                    sleep(2000)
+                    continue
+                }
+            }
+        } else {
+            console.info("dep1: " + dep1)
+            sendOnlineLog("dep1: " + dep1)
+            if (retry < depRetryCount - 1) {
+                console.log("第" + (retry + 1) + "次查找始发站元素失败，等待重试...")
+                sleep(2000)
+                continue
+            }
             return 3
-        }
-        myCustomClick(stationEdit)
-        // sleep((random() + random(2, 5)) * 100)
-        // text("取消").waitFor()
-        var cancelBtn = detectWidgetItem("text", "取消", "error", normal)
-        if(cancelBtn == null) {
-            console.error("设置始发站时 没有找到文本取消取消按钮")
-            sendOnlineLog("error", "设置始发站时 没有找到文本取消取消按钮")
-            return 3
-        }
-        input(0, departStaName)
-        sleep((random() + random(2, 5)) * 100)
-        // className("android.widget.Button").textContains(departStaName).waitFor()
-        detectWidgetItemWithChainClassnameTextcontains("android.widget.Button", departStaName, "error", normal)
-        // textContains(departStaName).find().forEach(function(tv){    
-        //     // 北京, com.MobileTicket:id/home_page_train_dep1, android.widget.TextView, true, 出发站: 北京
-        //     // 北京--上海, null, android.widget.TextView, true, 根据查询历史将目的地切换为 北京  到 上海
-        //     // 北京, com.MobileTicket:id/tv_city, android.widget.TextView, false, null
-        //     console.log(tv.text() + ", " + tv.id() + ", " + tv.className() + ", " + tv.clickable() + ", " + tv.desc());
-        // });
-        var sts = className("android.widget.Button").textContains("火车站 " + departStaName + "站").find()
-        if(sts.size() >= 1) {
-            // sts.get(0).click()
-            myCustomClick(sts.get(0))
-            isDepOk = true
         }
         // console.timeEnd("始发站")
-    } else {
-        console.info("dep1: " + dep1)
-        sendOnlineLog("dep1: " + dep1)
-        return 3
     }
 
     if(!isDepOk) {
         // UiSelector.descStartsWith(prefix)
-        var dep1 = className("android.widget.TextView").descStartsWith("出发站: ").findOnce();
+        var dep1 = className("android.widget.TextView").descStartsWith("出发站: ").findOnce();
         console.info("dep1: " + dep1)
         sendOnlineLog("debug", "dep1: " + dep1)
         if(dep1 == null) {
@@ -3000,8 +3039,8 @@ function doPrepareQueryParameters() {
         // myCustomClick(detectWidgetItem("className", "android.widget.EditText", "error", lite))
         var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
         if(stationEdit == null) {
-            console.error("设置到达站时 没有找到文本文本编辑框")
-            sendOnlineLog("error", "设置到达站时 没有找到文本文本编辑框")
+            console.error("设置到达站时 没有找到文本编辑框")
+            sendOnlineLog("error", "设置到达站时 没有找到文本编辑框")
             return 4
         }
         myCustomClick(stationEdit)
