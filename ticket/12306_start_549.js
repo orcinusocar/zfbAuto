@@ -3493,6 +3493,13 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
                 detectWidgetItemLog(log_level, item_content, try_time_max);
                 return null;
             }
+            }
+        return detect_widget_item;
+    } else if(item_type == "textcontains") {
+        let detect_widget_item = textContains(item_content).findOne(try_time_max * 100);
+        if(!detect_widget_item) {
+            detectWidgetItemLog(log_level, item_content, try_time_max);
+            return null;
         }
         return detect_widget_item;
     } else {
