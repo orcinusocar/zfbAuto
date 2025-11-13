@@ -1839,7 +1839,7 @@ function doChoosePassenger() {
         myCustomClick(choosePassenger)
         sleep((random() + random(1, 3)) * 200)
         // id("h5_title").text("选择乘车人").waitFor()
-        var choosePassengerPage = detectWidgetItemWithChain("h5_title", "选择乘车人", "error", 100)
+        var choosePassengerPage = detectWidgetItemWithChainIdTextcontains("h5_title", "选择乘车人", "error", 100)
         if(choosePassengerPage == null) {
             return 20
         }
@@ -3019,60 +3019,62 @@ function doPrepareQueryParameters() {
         return 3;
     }
     // 到达站
-    // var arr1 = id("home_page_train_arr1").findOne(timeout)
-    sleep((random() + random(2, 4)) * 200)
-    var arr1 = detectWidgetItem("id", "home_page_train_arr1", "error", normal)
-    if(arr1 != null) {
-        // arr1.click()
-        // console.time("到达站")
-        sleep((random() + random(3, 5)) * 200)
-        myCustomClick(arr1)
-        sleep((random() + random(3, 5)) * 100)
-        // textContains("我的位置").waitFor();
-        // var chooseSatationPage = detectWidgetItemWithChainClassnameText("android.view.View", "热门车站", "error", normal)
-        // if(chooseSatationPage == null) {
-        //     return 4
-        // }
-        // // sleep((random() + random(1, 3)) * 100)
-        // // className("android.widget.EditText").findOne(timeout).click()
-        // // myCustomClick(className("android.widget.EditText").findOne(timeout))
-        // myCustomClick(detectWidgetItem("className", "android.widget.EditText", "error", lite))
-        var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
-        if(stationEdit == null) {
-            console.error("设置到达站时 没有找到文本编辑框")
-            sendOnlineLog("error", "设置到达站时 没有找到文本编辑框")
+    var arrRetryCount = 3
+    for (var retry = 0; retry < arrRetryCount; retry++) {
+        sleep((random() + random(2, 4)) * 200)
+        var arr1 = detectWidgetItem("id", "home_page_train_arr1", "error", normal)
+        if(arr1 != null) {
+            sleep((random() + random(3, 5)) * 200)
+            myCustomClick(arr1)
+            sleep((random() + random(3, 5)) * 100)
+            var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
+            if(stationEdit == null) {
+                console.error("设置到达站时 没有找到文本编辑框")
+                sendOnlineLog("error", "设置到达站时 没有找到文本编辑框")
+                if (retry < arrRetryCount - 1) {
+                    console.log("第" + (retry + 1) + "次到达站设置失败，返回重试...")
+                    back()
+                    sleep(2000)
+                    continue
+                }
+                return 4
+            }
+            myCustomClick(stationEdit)
+            var cancelBtn = detectWidgetItem("text", "取消", "error", normal)
+            if(cancelBtn == null) {
+                console.error("设置到达站时 没有找到文本取消取消按钮")
+                sendOnlineLog("error", "设置到达站时 没有找到文本取消取消按钮")
+                back()
+                return 4
+            }
+            input(0, arriveStaName)
+            sleep((random() + random(2, 5)) * 100)
+            detectWidgetItemWithChainClassnameTextcontains("android.widget.Button", arriveStaName, "error", normal)
+            var sts = className("android.widget.Button").textContains("火车站 " + arriveStaName + "站").find()
+            if(sts.size() >= 1) {
+                myCustomClick(sts.get(0))
+                isArrOk = true
+                break
+            } else {
+                console.error("设置到达站时 没有找到车站按钮")
+                sendOnlineLog("error", "设置到达站时 没有找到车站按钮")
+                if (retry < arrRetryCount - 1) {
+                    console.log("第" + (retry + 1) + "次到达站设置失败，返回重试...")
+                    back()
+                    sleep(2000)
+                    continue
+                }
+            }
+        } else {
+            console.info("arr1: " + arr1)
+            sendOnlineLog("arr1: " + arr1)
+            if (retry < arrRetryCount - 1) {
+                console.log("第" + (retry + 1) + "次查找到达站元素失败，等待重试...")
+                sleep(2000)
+                continue
+            }
             return 4
         }
-        myCustomClick(stationEdit)
-        // text("取消").waitFor()
-        var cancelBtn = detectWidgetItem("text", "取消", "error", normal)
-        if(cancelBtn == null) {
-            console.error("设置到达站时 没有找到文本取消取消按钮")
-            sendOnlineLog("error", "设置到达站时 没有找到文本取消取消按钮")
-            return 4
-        }
-        input(0, arriveStaName)
-        sleep((random() + random(2, 5)) * 100)
-        // className("android.widget.Button").textContains(arriveStaName).waitFor()
-        detectWidgetItemWithChainClassnameTextcontains("android.widget.Button", arriveStaName, "error", normal)
-        // textContains(arriveStaName).find().forEach(function(tv){    
-        //     // 北京, com.MobileTicket:id/home_page_train_dep1, android.widget.TextView, true, 出发站: 北京
-        //     // 北京--上海, null, android.widget.TextView, true, 根据查询历史将目的地切换为 北京  到 上海
-        //     // 北京, com.MobileTicket:id/tv_city, android.widget.TextView, false, null
-        //     console.log(tv.text() + ", " + tv.id() + ", " + tv.className() + ", " + tv.clickable() + ", " + tv.desc());
-
-        // });
-        var sts = className("android.widget.Button").textContains("火车站 " + arriveStaName + "站").find()
-        if(sts.size() >= 1) {
-            // sts.get(0).click()
-            myCustomClick(sts.get(0))
-            isArrOk = true
-        }
-        // console.timeEnd("到达站")
-    } else {
-        console.info("arr1: " + arr1)
-        sendOnlineLog("arr1: " + arr1)
-        return 4
     }
     if(!isArrOk) {
         return 4;
@@ -3435,8 +3437,8 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
             detect_widget_item = text(item_content).findOnce();
             try_time++;
             if (try_time > try_time_max) {
-                detectWidgetItemLog(log_level, item_content, try_time_max);
-                return null;
+            detectWidgetItemLog(log_level, item_content, try_time_max);
+            return null;
             }
         }
         return detect_widget_item;
@@ -3449,8 +3451,8 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
             detect_widget_item = id(item_content).findOnce();
             try_time++;
             if (try_time > try_time_max) {
-                detectWidgetItemLog(log_level, item_content, try_time_max);
-                return null;
+            detectWidgetItemLog(log_level, item_content, try_time_max);
+            return null;
             }
         }
         return detect_widget_item;
@@ -3463,8 +3465,8 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
             detect_widget_item = textContains(item_content).findOnce();
             try_time++;
             if (try_time > try_time_max) {
-                detectWidgetItemLog(log_level, item_content, try_time_max);
-                return null;
+            detectWidgetItemLog(log_level, item_content, try_time_max);
+            return null;
             }
         }
         return detect_widget_item;
@@ -3477,8 +3479,8 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
             detect_widget_item = desc(item_content).findOnce();
             try_time++;
             if (try_time > try_time_max) {
-                detectWidgetItemLog(log_level, item_content, try_time_max);
-                return null;
+            detectWidgetItemLog(log_level, item_content, try_time_max);
+            return null;
             }
         }
         return detect_widget_item;
@@ -3490,16 +3492,22 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
             detect_widget_item = className(item_content).findOnce();
             try_time++;
             if (try_time > try_time_max) {
-                detectWidgetItemLog(log_level, item_content, try_time_max);
-                return null;
-            }
-            }
-        return detect_widget_item;
-    } else if(item_type == "textcontains") {
-        let detect_widget_item = textContains(item_content).findOne(try_time_max * 100);
-        if(!detect_widget_item) {
             detectWidgetItemLog(log_level, item_content, try_time_max);
             return null;
+            }
+        }
+        return detect_widget_item;
+    } else if(item_type == "textcontains") {
+        let detect_widget_item = textContains(item_content).findOnce();
+        let try_time = 0;
+        while(!detect_widget_item) {
+            sleep(100);
+            detect_widget_item = textContains(item_content).findOnce();
+            try_time++;
+            if(try_time > try_time_max) {
+                detectWidgetItemLog(log_level, item_content, try_time_max);
+                return null;
+            }   
         }
         return detect_widget_item;
     } else {
