@@ -23,7 +23,7 @@ function getChildren(control){
 // let control = descEndsWith("出发时间").findOne(2000);
 // let control = descEndsWith("航班价格").findOne(2000);
 // let control = descMatches(/^\d+出发日期$/).findOne(2000);
-let control = textContains("应急援助").findOne(2000);
+let control = textContains("清除数据").findOne(2000);
 // let control = desc("中转TrainAndBus筛选条件快筛列表").findOne(2000);
 
 console.log("control",control);

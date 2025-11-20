@@ -1,14 +1,15 @@
-if(isMask()){
-    autoOut();
-}
+// if(isMask()){
+//     autoOut();
+// }
 
 function isMask(){
-    let control = id("ctrip.android.view:id/a").findOne(2000);
+    let control = className("android.widget.EditText").findOne(2000);
     if(!control){
         toastLog("没有找到控件");
         return false;
     }else{
         toastLog("找到控件");
+        console.log("control:",control);
         return true;
     }
 
@@ -26,4 +27,5 @@ function autoOut(){
     // 执行滑动（模拟手指滑动）
     gesture(500, [startX, y], [endX, y]);
 }
-  
+
+isMask();

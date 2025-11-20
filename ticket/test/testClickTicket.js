@@ -66,7 +66,7 @@ function detectWidgetItemLog(log_level, item_content, try_time_max) {
 }
 
 function testClickTicket() {
-    console.log("=== 开始测试车次点击 ===");
+    console.log("testClick");
     
     // 修正车次格式，使用带空格的格式
     var trainButton = detectWidgetItemWithChainClassnameTextcontainsTextcontainsTextcontains("android.widget.Button", "G 1", "从北京南出发", "到达上海虹桥,历时", "error", 10);
