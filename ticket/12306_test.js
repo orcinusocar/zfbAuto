@@ -56,13 +56,13 @@ const testCases = {
         data: {
             id: "test_order_" + Date.now(),
             query: {
-                depart_station: "广州白云",
-                arrive_station: "郑州",
-                depart_date: "2025-11-18",
+                depart_station: "茂名",
+                arrive_station: "海口",
+                depart_date: "2025-11-28",
                 student: false
             },
             order: {
-                code: "T370",
+                code: "Z501",
                 passengers: [{
                     passenger_name: "曾粤扬",
                     identity_type: "1",
@@ -70,8 +70,8 @@ const testCases = {
                     passenger_type: "1"
                 }],
                 seat_no: null,
-                seat_type_code: "3",
-                has_seat: true,
+                seat_type_code: "6",
+                has_seat: false,
                 is_pay_by_point: false
             }
         }

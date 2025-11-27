@@ -45,6 +45,8 @@ try {
 importPackage(Packages.fi.iki.elonen.util);
 importPackage(Packages.fi.iki.elonen);
 
+const layoutInspector = require("__layout_inspector__")(runtime, global);
+
 importClass("java.net.InetAddress");
 importClass("java.net.NetworkInterface");
 importClass("java.net.Inet6Address");
@@ -218,7 +220,9 @@ const errorMaps_actual = {
     200: "没有找到添加乘车人按钮",
     201: "没有找到证件类型按钮",
     202: "没有找到证件类型",
-    241:"quick order"
+    241:"quick order",
+    242:"请先注册积分会员!",
+    243:"出票失败，尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。"
 }
 
 const errorMaps = {
@@ -317,7 +321,9 @@ const errorMaps = {
     200: "30秒检测JS假死到时",
     201: "30秒检测JS假死到时",
     202: "30秒检测JS假死到时",
-    241:"quick order"
+    241: "quick order",
+    242: "请先注册积分会员!",
+    243: "出票失败，尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。"
 }
 
 const errorMaps2 = {
@@ -919,6 +925,16 @@ function doMainProcess() {
                 // text("确认订单").waitFor()
                 // var orderConfirm1 = className("android.widget.Button").text("提交订单").findOne(timeout * 2);
                 var orderConfirm1 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", 100)
+                if(orderConfirm1 == null) {
+                    console.log("首次获取提交订单按钮失败，尝试使用layoutInspector重试")
+                    sendOnlineLog("info", "首次获取提交订单按钮失败，尝试使用layoutInspector重试")
+                    layoutInspector.captureCurrentWindow()
+                    orderConfirm1 = layoutInspector.text("提交订单").findOnce()
+                    if(orderConfirm1 != null) {
+                        console.log("layoutInspector重试成功，找到提交订单按钮")
+                        sendOnlineLog("info", "layoutInspector重试成功，找到提交订单按钮")
+                    }
+                }
                 if(orderConfirm1 != null) {
                     // 如果没有找到车次，直接返回错误
                     // var trainButton = detectWidgetItemWithChainClassnameTextcontainsTextcontainsTextcontains("android.view.View", theTrainFormat + "次", "从" + departStaName + "出发", "到达" + arriveStaName.slice(0,1), arriveStaName.slice(1) + "历时", "error", normal)
@@ -995,13 +1011,24 @@ function doMainProcess() {
                         if(!result) {
                             // var orderConfirm2 = className("android.widget.Button").text("提交订单").findOne(timeout * 2);
                             var orderConfirm2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", normal)
+                            if(orderConfirm2 == null) {
+                                console.log("首次获取提交订单按钮失败，尝试使用layoutInspector重试")
+                                sendOnlineLog("info", "首次获取提交订单按钮失败，尝试使用layoutInspector重试")
+                                layoutInspector.captureCurrentWindow()
+                                orderConfirm2 = layoutInspector.text("提交订单").findOnce()
+                                if(orderConfirm2 != null) {
+                                    console.log("layoutInspector重试成功，找到提交订单按钮")
+                                    sendOnlineLog("info", "layoutInspector重试成功，找到提交订单按钮")
+                                }
+                            }
                             if(orderConfirm2 != null) {
                                 // text("提交订单").waitFor()
                                 // 选择座位
                                 doChooseSeat(seatNos)
                                 sleep((random() + random(3, 5)) * 200) 
                                 // Todo 提交订单按钮可能不可见
-                                orderConfirm2.click()
+                                console.log("点击提交订单按钮")
+                                commonClick(orderConfirm2)
                                 sleep((random() + random(1, 2)) * 200)    
                                 // orderConfirm2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", lite)
                                 // if(orderConfirm2 != null) {
@@ -1015,6 +1042,16 @@ function doMainProcess() {
                                 // 提交订单后需要等待较长时间才能进入未完成页面
                                 // var oderPayment1 = id("h5_title").text("未完成").findOne(timeout * 30)
                                 var oderPayment1 = detectWidgetItemWithChain1("h5_title", "未完成", "error", 100 * 6)
+                                if(oderPayment1 == null && global_result != 16 && global_result != 115) {
+                                    console.log("首次获取未完成页面失败，尝试使用layoutInspector重试")
+                                    sendOnlineLog("info", "首次获取未完成页面失败，尝试使用layoutInspector重试")
+                                    layoutInspector.captureCurrentWindow()
+                                    oderPayment1 = layoutInspector.text("未完成").findOnce()
+                                    if(oderPayment1 != null) {
+                                        console.log("layoutInspector重试成功，找到未完成页面")
+                                        sendOnlineLog("info", "layoutInspector重试成功，找到未完成页面")
+                                    }
+                                }
                                 if(global_result == 16) {
                                     console.warn("有未完成订单")
                                     sendOnlineLog("warn", "有未完成订单")
@@ -1072,10 +1109,20 @@ function doMainProcess() {
                                                     myCustomClick(orderRadio)
                                                     sleep((random() + random(2, 4)) * 200)
                                                     var oderPayment2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "待支付", "error", normal)
+                                                    if(oderPayment2 == null) {
+                                                        console.log("首次获取待支付按钮失败，尝试使用layoutInspector重试")
+                                                        sendOnlineLog("info", "首次获取待支付按钮失败，尝试使用layoutInspector重试")
+                                                        layoutInspector.captureCurrentWindow()
+                                                        oderPayment2 = layoutInspector.text("待支付").findOnce()
+                                                        if(oderPayment2 != null) {
+                                                            console.log("layoutInspector重试成功，找到待支付按钮")
+                                                            sendOnlineLog("info", "layoutInspector重试成功，找到待支付按钮")
+                                                        }
+                                                    }
                                                     if(oderPayment2 != null) {
                                                         sleep((random() + random(2, 4)) * 200)
                                                         // oderPayment2.click()
-                                                        myCustomClick(oderPayment2)
+                                                        commonClick(oderPayment2)
                                                         detectWidgetItemWithChainClassnameText("android.widget.Button", "立即支付", "error", normal)
                                                         // id("h5_title").text("未完成").waitFor()
                                                         sleep((random() + random(3, 5)) * 100)
@@ -2236,7 +2283,9 @@ function doClickTipWindow() {
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                         // global_result = 30
                         // errorMaps[global_result] = contentText
-                    } else if(contentText.indexOf("您的请求已在处理中，请在未完成订单中查询订单状态") !== -1){
+                    } else if (contentText.indexOf("优惠资质核验通过的学生旅客") !== -1){
+                        myCustomClick(id("sure").text("我知道了").findOne(timeout))
+                    }else if(contentText.indexOf("您的请求已在处理中，请在未完成订单中查询订单状态") !== -1){
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                         global_result = 31
                         errorMaps[global_result] = contentText
@@ -2320,7 +2369,7 @@ function doClickTipWindow() {
                         // myCustomClick(id("sure").text("确定").findOne(timeout))
                         back()
                         global_result = 69
-                    } else if(contentText.indexOf("当乘车人联系方式格式错误，请完善联系方式") !== -1) {
+                    }else if(contentText.indexOf("乘车人联系方式格式错误，请完善联系方式") !== -1) {
                         // myCustomClick(id("sure").text("确定").findOne(timeout))
                         back()
                         global_result = 70
@@ -2760,6 +2809,17 @@ function doGoToMainPage2() {
     var homeRadio = detectWidgetItemWithChain("ticket_home_bottom_bar_ticket", "首页", "error", 5)
     var count = 0 
     while(homeRadio == null) {
+        if(count == 10){
+            console.log("无法返回首页，尝试使用layoutInspector重试")
+            sendOnlineLog("info", "无法返回首页，尝试使用layoutInspector重试")
+            layoutInspector.captureCurrentWindow()
+            homeRadio = layoutInspector.id("ticket_home_bottom_bar_ticket").findOnce()
+            if(homeRadio != null) {
+                console.log("layoutInspector重试成功，找到首页按钮")
+                sendOnlineLog("info", "layoutInspector重试成功，找到首页按钮")
+                break
+            }
+        }
         if(count > 10) {
             break
         }
@@ -2770,14 +2830,9 @@ function doGoToMainPage2() {
         homeRadio = detectWidgetItemWithChain("ticket_home_bottom_bar_ticket", "首页", "error", 5)
         console.log("homeRadio " + homeRadio)
     }
-    if(homeRadio == null ) {
-        console.log("failed to goto main page ")
-        sendOnlineLog("info", "doGoToMainPage2 homeRadio twice")
-        return 2
-    }
     if(homeRadio != null) {
         // homeRadio.click()
-        myCustomClick(homeRadio)
+        commonClick(homeRadio)
         sleep((random() + random(2, 4)) * 200)
         console.log("homeRadio")
         sendOnlineLog("info", "doGoToMainPage2 homeRadio")
@@ -2796,7 +2851,7 @@ function doGoToMainPage2() {
         //     homeRadio = detectWidgetItemWithChain("ticket_home_bottom_bar_ticket", "首页", "error", 5)
         // }
 
-        myCustomClick(homeRadio)
+        commonClick(homeRadio)
         sleep((random() + random(2, 4)) * 200)
         console.log("homeRadio twice")
         sendOnlineLog("info", "doGoToMainPage2 homeRadio twice")
@@ -2917,11 +2972,20 @@ function doPrepareQueryParameters() {
     var depRetryCount = 3
     for (var retry = 0; retry < depRetryCount; retry++) {
         var dep1 = detectWidgetItem("id", "home_page_train_dep1", "error", normal)
+        if(dep1 == null){
+            console.log("始发站元素未找到，尝试使用layoutInspector重试")
+            sendOnlineLog("info", "始发站元素未找到，尝试使用layoutInspector重试")
+            dep1 = layoutInspector.id("home_page_train_dep1").findOnce()
+            if(dep1 != null) {
+                console.log("layoutInspector重试成功，找到始发站元素")
+                sendOnlineLog("info", "layoutInspector重试成功，找到始发站元素")
+            }
+        }
         if(dep1 != null) {
             // dep1.click()
             // console.time("始发站")
             sleep((random() + random(2, 4)) * 100)
-            myCustomClick(dep1)
+            commonClick(dep1)
             // textContains("我的位置").waitFor();
             // var chooseSatationPage = detectWidgetItemWithChainClassnameText("android.view.View", "热门车站", "error", normal)
             // if(chooseSatationPage == null) {
@@ -2933,6 +2997,16 @@ function doPrepareQueryParameters() {
             
             // 文本编辑框查找重试
             var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
+            if(stationEdit == null) {
+                console.log("获取始发站文本编辑框失败，尝试使用layoutInspector重试")
+                sendOnlineLog("info", "获取始发站文本编辑框失败，尝试使用layoutInspector重试")
+                layoutInspector.captureCurrentWindow()
+                stationEdit = layoutInspector.className("android.widget.EditText").findOnce()
+                if(stationEdit != null) {
+                    console.log("layoutInspector重试成功，找到始发站文本编辑框")
+                    sendOnlineLog("info", "layoutInspector重试成功，找到始发站文本编辑框")
+                }
+            }
             
             if(stationEdit == null && dep1 == null) {
                 //始发站页面没加载出来
@@ -2951,7 +3025,7 @@ function doPrepareQueryParameters() {
                 sendOnlineLog("error", "进入始发站界面失败，重新点击设置始发站")
                 continue
             }else{
-                myCustomClick(stationEdit)
+                commonClick(stationEdit)
             }
             // sleep((random() + random(2, 5)) * 100)
             // text("取消").waitFor()
@@ -3029,17 +3103,26 @@ function doPrepareQueryParameters() {
             sleep((random() + random(3, 5)) * 100)
             var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
             if(stationEdit == null) {
-                console.error("设置到达站时 没有找到文本编辑框")
-                sendOnlineLog("error", "设置到达站时 没有找到文本编辑框")
-                if (retry < arrRetryCount - 1) {
-                    console.log("第" + (retry + 1) + "次到达站设置失败，返回重试...")
-                    back()
-                    sleep(2000)
-                    continue
+                console.log("首次获取文本编辑框失败，尝试使用layoutInspector重试")
+                sendOnlineLog("info", "首次获取文本编辑框失败，尝试使用layoutInspector重试")
+                layoutInspector.captureCurrentWindow()
+                stationEdit = layoutInspector.className("android.widget.EditText").findOnce()
+                if(stationEdit != null) {
+                    console.log("layoutInspector重试成功，找到文本编辑框")
+                    sendOnlineLog("info", "layoutInspector重试成功，找到文本编辑框")
+                } else {
+                    console.error("设置到达站时 没有找到文本编辑框")
+                    sendOnlineLog("error", "设置到达站时 没有找到文本编辑框")
+                    if (retry < arrRetryCount - 1) {
+                        console.log("第" + (retry + 1) + "次到达站设置失败，返回重试...")
+                        back()
+                        sleep(2000)
+                        continue
+                    }
+                    return 4
                 }
-                return 4
             }
-            myCustomClick(stationEdit)
+            commonClick(stationEdit)
             var cancelBtn = detectWidgetItem("text", "取消", "error", normal)
             if(cancelBtn == null) {
                 console.error("设置到达站时 没有找到文本取消取消按钮")
@@ -3100,9 +3183,18 @@ function doPrepareQueryParameters() {
             // text("选择日期").waitFor()
             var chooseDatePage = detectWidgetItem("text", "选择日期", "error", 100)
             if(chooseDatePage == null) {
-                console.error("设置日期时 没有跳到选择日期页面")
-                sendOnlineLog("error", "设置日期时 没有跳到选择日期页面")
-                return 5
+                console.log("首次获取选择日期页面失败，尝试使用layoutInspector重试")
+                sendOnlineLog("info", "首次获取选择日期页面失败，尝试使用layoutInspector重试")
+                layoutInspector.captureCurrentWindow()
+                chooseDatePage = layoutInspector.text("选择日期").findOnce()
+                if(chooseDatePage != null) {
+                    console.log("layoutInspector重试成功，找到选择日期页面")
+                    sendOnlineLog("info", "layoutInspector重试成功，找到选择日期页面")
+                } else {
+                    console.error("设置日期时 没有跳到选择日期页面")
+                    sendOnlineLog("error", "设置日期时 没有跳到选择日期页面")
+                    return 5
+                }
             }
             // text("今天").waitFor()
             sleep((random() + random(2, 3)) * 200)
@@ -4726,15 +4818,49 @@ function my_http_post(data, result_code) {
     }   
 }
 
-//确认当前所在界面
-function pageDetect(page_type) {
-    switch(page_type) {
-        case "ticket_home_page":
-            return "ticket_home_page";
-        case "ticket_order_page":
-            return "ticket_order_page";
-        case "ticket_order_success_page":
-            return "ticket_order_success_page";
+
+function commonClick(obj) {
+    if(obj == null) {
+        console.error("commonClick: invalid object " + obj)
+        sendOnlineLog("error", "commonClick: invalid object " + obj)
+        return
+    }
+    
+    if(typeof obj.click === 'function') {
+        myCustomClick(obj)
+    } else {
+        clickNodeCenter(obj)
     }
 }
 
+function clickNodeCenter(obj) {
+    if(obj == null) {
+        console.error("clickNodeCenter: invalid obj " + obj)
+        sendOnlineLog("error", "clickNodeCenter: invalid obj " + obj)
+        return
+    }
+    
+    var match = obj.bounds.match(/\((\d+),(\d+),(\d+),(\d+)\)/)
+    if(!match) {
+        console.error("clickNodeCenter: 无法解析bounds字符串 " + obj.bounds)
+        sendOnlineLog("error", "clickNodeCenter: 无法解析bounds字符串 " + obj.bounds)
+        return
+    }
+    
+    var left = parseInt(match[1])
+    var top = parseInt(match[2])
+    var right = parseInt(match[3])
+    var bottom = parseInt(match[4])
+    var x = Math.floor((left + right) / 2)
+    var y = Math.floor((top + bottom) / 2)
+    var w = right - left
+    var h = bottom - top
+    
+    var x1 = Math.ceil(x + random(-w / 3, w / 3))
+    var y1 = Math.ceil(y + random(-h / 3, h / 3))
+    var isClicked = click(x1, y1)
+    if(!isClicked) {
+        console.log("clickNodeCenter点击失败, x1 = " + x1 + ", y1 = " + y1)
+        sendOnlineLog("error", "clickNodeCenter点击失败, x1 = " + x1 + ", y1 = " + y1)
+    }
+}
