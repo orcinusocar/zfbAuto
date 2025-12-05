@@ -68,6 +68,8 @@ const normal = "normal"
 var global_result = 0
 // 接受到的错误信息
 var error_code = 0
+//是否选择购买学生票
+var needStudentTicket = false
 
 // 国家名称和简称表
 const countryMap = [{id:"CN",value:"中国CHINA",pinyin:"ZhongGuoCHINA"},{id:"US",value:"美国UNITEDSTATES",pinyin:"MeiGuoUNITEDSTATES"},{id:"AF",value:"阿富汗AFGHANISTANA",pinyin:"AFuHanAFGHANISTANA"},{id:"AL",value:"阿尔巴尼亚ALBANIA",pinyin:"AErBaNiYaALBANIA"},{id:"DZ",value:"阿尔及利亚ALGERIA",pinyin:"AErJiLiYaALGERIA"},{id:"AD",value:"安道尔ANDORRA",pinyin:"AnDaoErANDORRA"},{id:"AO",value:"安哥拉ANGOLA",pinyin:"AnGeLaANGOLA"},{id:"AG",value:"安提瓜和巴布达ANTIGUABARBUDA",pinyin:"AnTiGuaHeBaBuDaANTIGUABARBUDA"},{id:"AE",value:"阿拉伯联合酋长国ARAB",pinyin:"ALaBoLianHeQiuChangGuoARAB"},{id:"AR",value:"阿根廷ARGENTINA",pinyin:"AGenTingARGENTINA"},{id:"AM",value:"亚美尼亚ARMENIA",pinyin:"YaMeiNiYaARMENIA"},{id:"AW",value:"阿鲁巴ARUBA",pinyin:"ALuBaARUBA"},{id:"AU",value:"澳大利亚AUSTRALIA",pinyin:"AoDaLiYaAUSTRALIA"},{id:"AT",value:"奥地利AUSTRIA",pinyin:"AoDiLiAUSTRIA"},{id:"AZ",value:"阿塞拜疆共和国AZERBAIJAN",pinyin:"ASaiBaiJiangGongHeGuoAZERBAIJAN"},{id:"BS",value:"巴哈马BAHAMAS",pinyin:"BaHaMaBAHAMAS"},{id:"BH",value:"巴林BAHRAIN",pinyin:"BaLinBAHRAIN"},{id:"BD",value:"孟加拉国BANGLADESH",pinyin:"MengJiaLaGuoBANGLADESH"},{id:"BB",value:"巴巴多斯BARBADOS",pinyin:"BaBaDuoSiBARBADOS"},{id:"BY",value:"白俄罗斯BELARUS",pinyin:"BaiELuoSiBELARUS"},{id:"BE",value:"比利时BELGIUM",pinyin:"BiLiShiBELGIUM"},{id:"BZ",value:"伯里兹BELIZE",pinyin:"BoLiZiBELIZE"},{id:"BZ",value:"伯利兹BELIZE",pinyin:"BoLiZiBELIZE"},{id:"BJ",value:"贝宁BENIN",pinyin:"BeiNingBENIN"},{id:"BT",value:"不丹BHUTAN",pinyin:"BuDanBHUTAN"},{id:"BO",value:"玻利维亚BOLIVIA",pinyin:"BoLiWeiYaBOLIVIA"},{id:"BA",value:"波斯尼亚和黑塞哥维那BOSNIA",pinyin:"BoSiNiYaHeHeiSaiGeWeiNaBOSNIA"},{id:"BW",value:"博茨瓦纳BOTSWANA",pinyin:"BoCiWaNaBOTSWANA"},{id:"BR",value:"巴西BRAZIL",pinyin:"BaXiBRAZIL"},{id:"BG",value:"保加利亚BULGARIA",pinyin:"BaoJiaLiYaBULGARIA"},{id:"BF",value:"布基纳法索BURKINAFASO",pinyin:"BuJiNaFaSuoBURKINAFASO"},{id:"BI",value:"布隆迪BURUNDI",pinyin:"BuLongDiBURUNDI"},{id:"BN",value:"文莱BruneiDarussalam",pinyin:"WenLaiBruneiDarussalam"},{id:"KH",value:"柬埔寨CAMBODIA",pinyin:"JianPuZhaiCAMBODIA"},{id:"CM",value:"喀麦隆CAMEROON",pinyin:"KaMaiLongCAMEROON"},{id:"CA",value:"加拿大CANADA",pinyin:"JiaNaDaCANADA"},{id:"KY",value:"佛得角CAPEVERDE",pinyin:"FuDeJiaoCAPEVERDE"},{id:"TD",value:"乍得CHAD",pinyin:"ZhaDeCHAD"},{id:"CL",value:"智利CHILE",pinyin:"ZhiLiCHILE"},{id:"CO",value:"哥伦比亚COLOMBIA",pinyin:"GeLunBiYaCOLOMBIA"},{id:"CO",value:"哥伦比亚COLUMBIA",pinyin:"GeLunBiYaCOLUMBIA"},{id:"KM",value:"科摩罗COMOROS",pinyin:"KeMoLuoCOMOROS"},{id:"CG",value:"刚果（布）CONGO",pinyin:"GangGuoBuCONGO"},{id:"CK",value:"库克群岛COOKISLANDS",pinyin:"KuKeQunDaoCOOKISLANDS"},{id:"CI",value:"科特迪瓦COTEDLVOIRE",pinyin:"KeTeDiWaCOTEDLVOIRE"},{id:"HR",value:"克罗地亚CROATIA",pinyin:"KeLuoDiYaCROATIA"},{id:"CU",value:"古巴共和国CUBA",pinyin:"GuBaGongHeGuoCUBA"},{id:"CY",value:"塞浦路斯CYPRUS",pinyin:"SaiPuLuSiCYPRUS"},{id:"CZ",value:"捷克共和国CZECHREPUBLIC",pinyin:"JieKeGongHeGuoCZECHREPUBLIC"},{id:"CF",value:"中非共和国Central Africa Republic",pinyin:"ZhongFeiGongHeGuoCentral-Africa-Republic"},{id:"CRC",value:"哥斯达黎加CostaRica",pinyin:"GeSiDaLiJiaCostaRica"},{id:"CD",value:"刚果（金）DEMOCRATIC REPUBLIC OF CONGO",pinyin:"GangGuoJinDEMOCRATIC-REPUBLIC-OF-CONGO"},{id:"YD",value:"也门民主人民共和国DEMOCRATICYEMEN",pinyin:"YeMenMinZhuRenMinGongHeGuoDEMOCRATICYEMEN"},{id:"DK",value:"丹麦DENMARK",pinyin:"DanMaiDENMARK"},{id:"DJ",value:"吉布提DJIBOUTI",pinyin:"JiBuTiDJIBOUTI"},{id:"DM",value:"多米尼克DOMINICA",pinyin:"DuoMiNiKeDOMINICA"},{id:"DO",value:"多米尼加DOMINICAN REPUBLIC",pinyin:"DuoMiNiJiaDOMINICAN-REPUBLIC"},{id:"EC",value:"厄瓜多尔ECUADOR",pinyin:"EGuaDuoErECUADOR"},{id:"EG",value:"埃及EGYPT",pinyin:"AiJiEGYPT"},{id:"EV",value:"萨尔瓦多EL SALVADOR",pinyin:"SaErWaDuoEL-SALVADOR"},{id:"GQ",value:"赤道几内亚EQUATORIALGUINEA",pinyin:"ChiDaoJiNaYaEQUATORIALGUINEA"},{id:"ER",value:"厄立特里亚ERITREA",pinyin:"ELiTeLiYaERITREA"},{id:"EE",value:"爱沙尼亚ESTONIA",pinyin:"AiShaNiYaESTONIA"},{id:"ET",value:"埃塞俄比亚ETHIOPIA",pinyin:"AiSaiEBiYaETHIOPIA"},{id:"FJ",value:"斐济FIJI",pinyin:"FeiJiFIJI"},{id:"FI",value:"芬兰FINLAND",pinyin:"FenLanFINLAND"},{id:"FR",value:"法国FRANCE",pinyin:"FaGuoFRANCE"},{id:"GA",value:"加蓬GABON",pinyin:"JiaPengGABON"},{id:"GM",value:"冈比亚GAMBIA",pinyin:"GangBiYaGAMBIA"},{id:"CE",value:"格鲁吉亚GEORGIA",pinyin:"GeLuJiYaGEORGIA"},{id:"DE",value:"德国GERMANY",pinyin:"DeGuoGERMANY"},{id:"GH",value:"加纳GHANA",pinyin:"JiaNaGHANA"},{id:"GR",value:"希腊GREECE",pinyin:"XiLaGREECE"},{id:"GL",value:"格林纳达GRENADA",pinyin:"GeLinNaDaGRENADA"},{id:"GN",value:"几内亚GUINEA",pinyin:"JiNaYaGUINEA"},{id:"GW",value:"几内亚比绍GUINEA-BISSAU",pinyin:"JiNaYaBiShaoGUINEA-BISSAU"},{id:"GW",value:"几内亚比绍GUINEABISSAU",pinyin:"JiNaYaBiShaoGUINEABISSAU"},{id:"GY",value:"圭亚那GUYANA",pinyin:"GuiYaNaGUYANA"},{id:"GT",value:"危地马拉Guatemala",pinyin:"WeiDiMaLaGuatemala"},{id:"HT",value:"海地HAITI",pinyin:"HaiDiHAITI"},{id:"NL",value:"荷兰HOLLAND",pinyin:"HeLanHOLLAND"},{id:"HN",value:"洪都拉斯HONDURAS",pinyin:"HongDuLaSiHONDURAS"},{id:"HU",value:"匈牙利HUNGARY",pinyin:"XiongYaLiHUNGARY"},{id:"IS",value:"冰岛ICELAND",pinyin:"BingDaoICELAND"},{id:"IN",value:"印度INDIA",pinyin:"YinDuINDIA"},{id:"ID",value:"印度尼西亚INDONESIA",pinyin:"YinDuNiXiYaINDONESIA"},{id:"IR",value:"伊朗IRAN",pinyin:"YiLangIRAN"},{id:"IQ",value:"伊拉克IRAQ",pinyin:"YiLaKeIRAQ"},{id:"IE",value:"爱尔兰IRELAND",pinyin:"AiErLanIRELAND"},{id:"IL",value:"以色列ISRAEL",pinyin:"YiSeLieISRAEL"},{id:"IT",value:"意大利ITALY",pinyin:"YiDaLiITALY"},{id:"JM",value:"牙买加JAMAICA",pinyin:"YaMaiJiaJAMAICA"},{id:"JP",value:"日本JAPAN",pinyin:"RiBenJAPAN"},{id:"JO",value:"约旦JORDAN",pinyin:"YueDanJORDAN"},{id:"KZ",value:"哈萨克斯坦KAZAKHSTAN",pinyin:"HaSaKeSiTanKAZAKHSTAN"},{id:"KE",value:"肯尼亚KENYA",pinyin:"KenNiYaKENYA"},{id:"KG",value:"吉尔吉斯共和国KIRGIZSTAN",pinyin:"JiErJiSiGongHeGuoKIRGIZSTAN"},{id:"KI",value:"基里巴斯KIRIBATI",pinyin:"JiLiBaSiKIRIBATI"},{id:"KR",value:"韩国ROK",pinyin:"HanGuoKOREA"},{id:"KW",value:"科威特KUWAIT",pinyin:"KeWeiTeKUWAIT"},{id:"DPR",value:"朝鲜Korea",pinyin:"ChaoXianKorea"},{id:"LA",value:"老挝LAOS",pinyin:"LaoWoLAOS"},{id:"LV",value:"拉脱维亚LATVIA",pinyin:"LaTuoWeiYaLATVIA"},{id:"LB",value:"黎巴嫩LEBANON",pinyin:"LiBaNenLEBANON"},{id:"LS",value:"莱索托LESOTHO",pinyin:"LaiSuoTuoLESOTHO"},{id:"LR",value:"利比里亚LIBERIA",pinyin:"LiBiLiYaLIBERIA"},{id:"LY",value:"利比亚LIBYA",pinyin:"LiBiYaLIBYA"},{id:"LI",value:"列支敦士登LIECHTENSTEIN",pinyin:"LieZhiDunShiDengLIECHTENSTEIN"},{id:"LT",value:"立陶宛LITHUANIA",pinyin:"LiTaoWanLITHUANIA"},{id:"LU",value:"卢森堡LUXEMBOURG",pinyin:"LuSenBaoLUXEMBOURG"},{id:"MK",value:"马其顿MACEDONIA",pinyin:"MaQiDunMACEDONIA"},{id:"MG",value:"马达加斯加MADAGASCAR",pinyin:"MaDaJiaSiJiaMADAGASCAR"},{id:"MW",value:"马拉维MALAWI",pinyin:"MaLaWeiMALAWI"},{id:"MY",value:"马来西亚MALAYSIA",pinyin:"MaLaiXiYaMALAYSIA"},{id:"MV",value:"马尔代夫MALDIVES",pinyin:"MaErDaiFuMALDIVES"},{id:"ML",value:"马里MALI",pinyin:"MaLiMALI"},{id:"MT",value:"马耳他MALTA",pinyin:"MaErTaMALTA"},{id:"MH",value:"马绍尔群岛MARSHALL ISLANDS",pinyin:"MaShaoErQunDaoMARSHALL-ISLANDS"},{id:"MR",value:"毛里塔尼亚MAURITANIA",pinyin:"MaoLiTaNiYaMAURITANIA"},{id:"MU",value:"毛里求斯MAURITIUS",pinyin:"MaoLiQiuSiMAURITIUS"},{id:"MX",value:"墨西哥MEXICO",pinyin:"MoXiGeMEXICO"},{id:"FM",value:"密克罗尼西亚联邦MICRONESIA",pinyin:"MiKeLuoNiXiYaLianBangMICRONESIA"},{id:"MD",value:"摩尔多瓦MOLDOVA",pinyin:"MoErDuoWaMOLDOVA"},{id:"MC",value:"摩纳哥MONACO",pinyin:"MoNaGeMONACO"},{id:"MN",value:"蒙古MONGOLIA",pinyin:"MengGuMONGOLIA"},{id:"ME",value:"黑山MONTENEGRO",pinyin:"HeiShanMONTENEGRO"},{id:"MA",value:"摩洛哥MOROCCO",pinyin:"MoLuoGeMOROCCO"},{id:"MZ",value:"莫桑比克MOZAMBIQUE",pinyin:"MoSangBiKeMOZAMBIQUE"},{id:"MM",value:"缅甸MYANMAR",pinyin:"MianDianMYANMAR"},{id:"NA",value:"纳米比亚NAMIBIA",pinyin:"NaMiBiYaNAMIBIA"},{id:"NR",value:"瑙鲁NAURU",pinyin:"NaoLuNAURU"},{id:"NP",value:"尼泊尔NEPAL",pinyin:"NiBoErNEPAL"},{id:"NZ",value:"新西兰NEWZEALAND",pinyin:"XinXiLanNEWZEALAND"},{id:"NI",value:"尼加拉瓜NICARAGUA",pinyin:"NiJiaLaGuaNICARAGUA"},{id:"NE",value:"尼日尔NIGER",pinyin:"NiRiErNIGER"},{id:"NG",value:"尼日利亚NIGERIA",pinyin:"NiRiLiYaNIGERIA"},{id:"NO",value:"挪威NORWAY",pinyin:"NuoWeiNORWAY"},{id:"OM",value:"阿曼OMAN",pinyin:"AManOMAN"},{id:"PK",value:"巴基斯坦PAKISTAN",pinyin:"BaJiSiTanPAKISTAN"},{id:"PW",value:"帕劳PALAU",pinyin:"PaLaoPALAU"},{id:"BL",value:"巴勒斯坦PALESTINE",pinyin:"BaLeSiTanPALESTINE"},{id:"PA",value:"巴拿马PANAMA",pinyin:"BaNaMaPANAMA"},{id:"PG",value:"巴布亚新几内亚PAPUANEWGUINEA",pinyin:"BaBuYaXinJiNaYaPAPUANEWGUINEA"},{id:"PY",value:"巴拉圭PARAGUAY",pinyin:"BaLaGuiPARAGUAY"},{id:"PE",value:"秘鲁PERU",pinyin:"MiLuPERU"},{id:"PH",value:"菲律宾PHILIPPINES",pinyin:"FeiLvBinPHILIPPINES"},{id:"PL",value:"波兰POLAND",pinyin:"BoLanPOLAND"},{id:"PT",value:"葡萄牙PORTUGAL",pinyin:"PuTaoYaPORTUGAL"},{id:"PR",value:"波多黎各PUERTO RICO",pinyin:"BoDuoLiGePUERTO-RICO"},{id:"QA",value:"卡塔尔QATAR",pinyin:"KaTaErQATAR"},{id:"RO",value:"罗马尼亚ROMANIA",pinyin:"LuoMaNiYaROMANIA"},{id:"RU",value:"俄罗斯RUSSIA",pinyin:"ELuoSiRUSSIA"},{id:"RW",value:"卢旺达RWANDA",pinyin:"LuWangDaRWANDA"},{id:"KNA",value:"圣基茨和尼维斯SAINT KITTS",pinyin:"ShengJiCiHeNiWeiSiSAINT-KITTS"},{id:"VC",value:"圣文森特和格林纳丁斯SAINT VINCENT AND THE GRENADIN",pinyin:"ShengWenSenTeHeGeLinNaDingSiSAINT-VINCENT-AND-THE-GRENADIN"},{id:"LC",value:"圣卢西亚SAINTLUCIA",pinyin:"ShengLuXiYaSAINTLUCIA"},{id:"WS",value:"美属萨摩亚SAMOA",pinyin:"MeiShuSaMoYaSAMOA"},{id:"SM",value:"圣马力诺SANMARINO",pinyin:"ShengMaLiNuoSANMARINO"},{id:"ST",value:"圣多美和普林西比SAOTOMEPRINCIPE",pinyin:"ShengDuoMeiHePuLinXiBiSAOTOMEPRINCIPE"},{id:"SA",value:"沙特阿拉伯SAUDIARABIA",pinyin:"ShaTeALaBoSAUDIARABIA"},{id:"SN",value:"塞内加尔SENEGAL",pinyin:"SaiNaJiaErSENEGAL"},{id:"CS",value:"塞尔维亚SERBIA",pinyin:"SaiErWeiYaSERBIA"},{id:"SC",value:"塞舌尔SEYCHELLES",pinyin:"SaiSheErSEYCHELLES"},{id:"SL",value:"塞拉利昂SIERRALEONE",pinyin:"SaiLaLiAngSIERRALEONE"},{id:"SG",value:"新加坡SINGAPORE",pinyin:"XinJiaPoSINGAPORE"},{id:"SK",value:"斯洛伐克SLOVAKIA",pinyin:"SiLuoFaKeSLOVAKIA"},{id:"SK",value:"斯洛伐克共和国SLOVAKREPUBLIC",pinyin:"SiLuoFaKeGongHeGuoSLOVAKREPUBLIC"},{id:"SI",value:"斯洛文尼亚SLOVENIA",pinyin:"SiLuoWenNiYaSLOVENIA"},{id:"SB",value:"所罗门群岛SOLOMON ISLANDS",pinyin:"SuoLuoMenQunDaoSOLOMON-ISLANDS"},{id:"SO",value:"索马里SOMALI",pinyin:"SuoMaLiSOMALI"},{id:"SO",value:"索马里SOMALIA",pinyin:"SuoMaLiSOMALIA"},{id:"ZA",value:"南非SOUTHAFRICA",pinyin:"NanFeiSOUTHAFRICA"},{id:"ES",value:"西班牙SPAIN",pinyin:"XiBanYaSPAIN"},{id:"LK",value:"斯里兰卡SRILANKA",pinyin:"SiLiLanKaSRILANKA"},{id:"SD",value:"苏丹SUDAN",pinyin:"SuDanSUDAN"},{id:"SR",value:"苏里南SURINAM",pinyin:"SuLiNanSURINAM"},{id:"SZ",value:"斯威士兰SWAZILAND",pinyin:"SiWeiShiLanSWAZILAND"},{id:"SE",value:"瑞典SWEDEN",pinyin:"RuiDianSWEDEN"},{id:"CH",value:"瑞士SWITZERLAND",pinyin:"RuiShiSWITZERLAND"},{id:"SY",value:"叙利亚SYRIA",pinyin:"XuLiYaSYRIA"},{id:"TJ",value:"塔吉克斯坦TAJIKISTAN",pinyin:"TaJiKeSiTanTAJIKISTAN"},{id:"TZ",value:"坦桑尼亚TANZANIA",pinyin:"TanSangNiYaTANZANIA"},{id:"TH",value:"泰国THAILAND",pinyin:"TaiGuoTHAILAND"},{id:"UGA",value:"乌干达THE REPUBLIC OF UGANDA",pinyin:"WuGanDaTHE-REPUBLIC-OF-UGANDA"},{id:"TL",value:"东帝汶TIMOR",pinyin:"DongDiWenTIMOR"},{id:"TG",value:"多哥TOGO",pinyin:"DuoGeTOGO"},{id:"TO",value:"汤加TONGA",pinyin:"TangJiaTONGA"},{id:"TT",value:"特立尼达和多巴哥TRINIDADANDTOBAGO",pinyin:"TeLiNiDaHeDuoBaGeTRINIDADANDTOBAGO"},{id:"TN",value:"突尼斯TUNISIA",pinyin:"TuNiSiTUNISIA"},{id:"TR",value:"土耳其TURKEY",pinyin:"TuErQiTURKEY"},{id:"TM",value:"土库曼斯坦TURKMENISTAN",pinyin:"TuKuManSiTanTURKMENISTAN"},{id:"UKR",value:"乌克兰UKRAINE",pinyin:"WuKeLanUKRAINE"},{id:"GB",value:"英国UNITED KINGDOM",pinyin:"YingGuoUNITED-KINGDOM"},{id:"UZB",value:"乌兹别克斯坦UZBEKISTAN",pinyin:"WuZiBieKeSiTanUZBEKISTAN"},{id:"UY",value:"乌拉圭Uruguay",pinyin:"WuLaGuiUruguay"},{id:"VU",value:"瓦努阿图VANUATU",pinyin:"WaNuATuVANUATU"},{id:"VA",value:"梵蒂冈VATICAN",pinyin:"FanDiGangVATICAN"},{id:"VIE",value:"越南VIETNAM",pinyin:"YueNanVIETNAM"},{id:"VE",value:"委内瑞拉Venezuela",pinyin:"WeiNaRuiLaVenezuela"},{id:"ZM",value:"赞比亚ZAMBIA",pinyin:"ZanBiYaZAMBIA"},{id:"ZW",value:"津巴布韦ZIMBABWE",pinyin:"JinBaBuWeiZIMBABWE"}]
@@ -222,7 +224,8 @@ const errorMaps_actual = {
     202: "没有找到证件类型",
     241:"quick order",
     242:"请先注册积分会员!",
-    243:"出票失败，尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。"
+    243:"尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。",
+    244:"1、儿童需携带购票（免费乘车儿童为申明）时所使用的有效身份证件乘车。"
 }
 
 const errorMaps = {
@@ -323,7 +326,8 @@ const errorMaps = {
     202: "30秒检测JS假死到时",
     241: "quick order",
     242: "请先注册积分会员!",
-    243: "出票失败，尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。"
+    243: "出票失败，尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。",
+    244: "1、儿童需携带购票（免费乘车儿童为申明）时所使用的有效身份证件乘车。"
 }
 
 const errorMaps2 = {
@@ -526,6 +530,7 @@ var myApp = {
                         traverllers_modified_passenger_type = {}
                         seatNos = infoObject.order.seat_no
                         ticketType = infoObject.order.seat_type_code
+                        needStudentTicket = infoObject.query.student || false
                         has_seat = infoObject.order.has_seat
                         is_pay_by_point = infoObject.order.is_pay_by_point
                         // sendOnlineLog("info",  "order_" + infoObject.login.username + "_" + infoObject.id)
@@ -925,7 +930,7 @@ function doMainProcess() {
                 // text("确认订单").waitFor()
                 // var orderConfirm1 = className("android.widget.Button").text("提交订单").findOne(timeout * 2);
                 var orderConfirm1 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", 100)
-                if(orderConfirm1 == null) {
+                if(orderConfirm1 == null && global_result == 0) {
                     console.log("首次获取提交订单按钮失败，尝试使用layoutInspector重试")
                     sendOnlineLog("info", "首次获取提交订单按钮失败，尝试使用layoutInspector重试")
                     layoutInspector.captureCurrentWindow()
@@ -1011,7 +1016,7 @@ function doMainProcess() {
                         if(!result) {
                             // var orderConfirm2 = className("android.widget.Button").text("提交订单").findOne(timeout * 2);
                             var orderConfirm2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", normal)
-                            if(orderConfirm2 == null) {
+                            if(orderConfirm2 == null && global_result == 0) {
                                 console.log("首次获取提交订单按钮失败，尝试使用layoutInspector重试")
                                 sendOnlineLog("info", "首次获取提交订单按钮失败，尝试使用layoutInspector重试")
                                 layoutInspector.captureCurrentWindow()
@@ -1028,6 +1033,7 @@ function doMainProcess() {
                                 sleep((random() + random(3, 5)) * 200) 
                                 // Todo 提交订单按钮可能不可见
                                 console.log("点击提交订单按钮")
+                                sendOnlineLog("info", "点击提交订单按钮")
                                 commonClick(orderConfirm2)
                                 sleep((random() + random(1, 2)) * 200)    
                                 // orderConfirm2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "提交订单", "error", lite)
@@ -1037,12 +1043,27 @@ function doMainProcess() {
                                 //     orderConfirm2.click()
                                 // }
                                 // myCustomClick(orderConfirm2)
-                                sleep((random() + random(1, 3)) * 300)               
+                                sleep((random() + random(1, 3)) * 300)              
                                 // id("h5_title").text("未完成").waitFor()
                                 // 提交订单后需要等待较长时间才能进入未完成页面
                                 // var oderPayment1 = id("h5_title").text("未完成").findOne(timeout * 30)
-                                var oderPayment1 = detectWidgetItemWithChain1("h5_title", "未完成", "error", 100 * 6)
-                                if(oderPayment1 == null && global_result != 16 && global_result != 115) {
+                                var oderPayment1 = null
+                                for(var waitSeconds = 1; waitSeconds <= 10 && oderPayment1 == null; waitSeconds++) {
+                                    sleep(waitSeconds * 1000)
+                                    oderPayment1 = detectWidgetItemWithChain1("h5_title", "未完成", "error", 100 * 3)  
+                                    if(global_result != 0 && global_result != 115) {
+                                        break;
+                                    }
+                                    if(oderPayment1 == null && waitSeconds < 10) {
+                                        console.log("等待" + waitSeconds + "秒后未找到未完成页面，继续等待...")
+                                    } else if(oderPayment1 != null) {
+                                        console.log("等待" + waitSeconds + "秒后找到未完成页面")
+                                        sendOnlineLog("info", "等待" + waitSeconds + "秒后，订单处理完，到未完成页面")
+                                    }else{
+                                        sendOnlineLog("error", "等待" + waitSeconds + "秒后，等待订单处理失败")
+                                    }
+                                }
+                                if(oderPayment1 == null && global_result == 0) {
                                     console.log("首次获取未完成页面失败，尝试使用layoutInspector重试")
                                     sendOnlineLog("info", "首次获取未完成页面失败，尝试使用layoutInspector重试")
                                     layoutInspector.captureCurrentWindow()
@@ -1103,13 +1124,27 @@ function doMainProcess() {
                                             if(!isWait) {
 
                                                 console.log("点击底部订单")
+                                                sendOnlineLog("info", "点击底部订单")
                                                 sleep((random() + random(2, 4)) * 500)
-                                                var orderRadio = detectWidgetItem("id", "ticket_home_bottom_bar_order", "error", normal)
+                                                var orderRadio = null
+                                                for(var waitSeconds = 1; waitSeconds <= 5 && orderRadio == null; waitSeconds++) {
+                                                    sleep(waitSeconds * 1000)
+                                                    orderRadio = detectWidgetItem("id", "ticket_home_bottom_bar_order", "error", normal)
+
+                                                    if(orderRadio == null && waitSeconds < 5) {
+                                                        console.log("等待" + waitSeconds + "秒后未找到底部订单按钮，继续等待...")
+                                                    } else if(orderRadio != null) {
+                                                        console.log("等待" + waitSeconds + "秒后找到底部订单按钮")
+                                                        sendOnlineLog("info", "等待" + waitSeconds + "秒后，找到底部订单按钮")
+                                                    } else {
+                                                        sendOnlineLog("error", "等待" + waitSeconds + "秒后，没找到底部订单按钮，不在首页")
+                                                    }
+                                                }
                                                 if(orderRadio != null) {
                                                     myCustomClick(orderRadio)
                                                     sleep((random() + random(2, 4)) * 200)
                                                     var oderPayment2 = detectWidgetItemWithChainClassnameText("android.widget.Button", "待支付", "error", normal)
-                                                    if(oderPayment2 == null) {
+                                                    if(oderPayment2 == null && global_result == 0) {
                                                         console.log("首次获取待支付按钮失败，尝试使用layoutInspector重试")
                                                         sendOnlineLog("info", "首次获取待支付按钮失败，尝试使用layoutInspector重试")
                                                         layoutInspector.captureCurrentWindow()
@@ -1131,13 +1166,15 @@ function doMainProcess() {
                                                         myCustomClick(detectWidgetItem("id", "h5_tv_nav_back", "error", normal))
                                                     } else {
                                                         console.error("放弃后未进入底部的订单页面")
-                                                        sendOnlineLog("error", "放弃后未进入底部的订单页面")
+                                                        msg = detectCurrentPage()
+                                                        sendOnlineLog("error", "放弃后未进入底部的订单页面 " + msg)
                                                         doCaptureAndSaveImage("goToHomeOrderPageError1")
                                                         result = 15;
                                                     }
                                                 } else {
                                                     console.error("底部订单按钮不存在")
-                                                    sendOnlineLog("error", "底部订单按钮不存在")
+                                                    msg = detectCurrentPage()
+                                                    sendOnlineLog("error", "底部订单按钮不存在 " + msg)
                                                     result = 15;
                                                 }
                                             } else {
@@ -1147,21 +1184,25 @@ function doMainProcess() {
                                         }
                                     } else {
                                         console.error("确认订单后没法进入未完成页面")
-                                        sendOnlineLog("error", "确认订单后没法进入未完成页面")
+                                        msg = detectCurrentPage()
+                                        sendOnlineLog("error", "确认订单后没法进入未完成页面 " + msg)
                                         doCaptureAndSaveImage("goToOrderPaymentPageError1")
+
                                         result = 14;
                                     }
                                 }
                             } else {
                                 console.error("选择乘客后没法进入确认订单页面")
-                                sendOnlineLog("error", "选择乘客后没法进入确认订单页面")
+                                msg = detectCurrentPage()
+                                sendOnlineLog("error", "选择乘客后没法进入确认订单页面 " + msg)
                                 doCaptureAndSaveImage("goToOrderPageError2")
                                 result = 13;
                             }
                         } else {
                             // 没有找到乘车人
-                            console.error(errorMaps[result])
-                            sendOnlineLog("error", errorMaps[result])
+                            msg = detectCurrentPage()
+                            console.error(errorMaps[result] + msg)
+                            sendOnlineLog("error", errorMaps[result] + " " + msg)
                             doCaptureAndSaveImage("doChoosePassenger")
                         }
                     } else {
@@ -1171,7 +1212,8 @@ function doMainProcess() {
                     }
                 } else {
                     console.error("没有找到确认订单页面")
-                    sendOnlineLog("error", "没有找到确认订单页面")
+                    msg = detectCurrentPage()
+                    sendOnlineLog("error", "没有找到确认订单页面 " + msg)
                     doCaptureAndSaveImage("goToOrderPageError1")
                     result = 12;
                 }
@@ -1184,13 +1226,15 @@ function doMainProcess() {
         } else {
             // 始发站，到达站，日期 有设置出错
             console.error("始发站，到达站，日期 有设置出错")
-            sendOnlineLog("error", "始发站，到达站，日期 有设置出错")
+            msg = detectCurrentPage()
+            sendOnlineLog("error", "始发站，到达站，日期 有设置出错 " + msg)
             doCaptureAndSaveImage("doPrepareQueryParameters")
         }
     } else {
         // 没法返回home界面
         console.error("没法返回home界面")
-        sendOnlineLog("error", "没法返回home界面")
+        msg = detectCurrentPage()
+        sendOnlineLog("error", "没法返回home界面 " + msg)
         doCaptureAndSaveImage("doGoToMainPage")
     }
 
@@ -2126,7 +2170,13 @@ function doClickTipWindow() {
                         //         console.error("Exception when posting error result " + global_result + ",  " + e)
                         //     }
                         // }
-                    } else if(contentText.indexOf("确定要放弃支付吗") !== -1){
+                    } else if(contentText.indexOf("尊敬的旅客，为更好维护购票和乘车秩序，不能购买行程冲突车票。") !== -1){
+                        myCustomClick(id("sure").text("确定").findOne(timeout))
+                        global_result = 243
+                    } else if(contentText.indexOf("1、儿童需携带购票（免费乘车儿童为申明）时所使用的有效身份证件乘车。") !== -1){
+                        myCustomClick(id("sure").text("确定").findOne(timeout))
+                        global_result = 244
+                    }else if(contentText.indexOf("确定要放弃支付吗") !== -1){
                         sleep((random() + random(1, 3)) * 100)
                         // id("sure").text("确定").click()
                         myCustomClick(id("sure").text("确定").findOne(timeout))
@@ -2191,7 +2241,14 @@ function doClickTipWindow() {
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                     } else if(contentText.indexOf("购买学生票吗") !== -1){
                         // myCustomClick(id("sure").text("是").findOne(timeout))
-                        myCustomClick(id("sure").findOne(timeout))
+                        // myCustomClick(id("sure").findOne(timeout))
+                        if(needStudentTicket) {
+                            myCustomClick(id("sure").text("是").findOne(timeout))
+                            sendOnlineLog("info", "选择购买学生票")
+                        } else {
+                            myCustomClick(id("cancel").findOne(timeout))
+                            sendOnlineLog("info", "不选择购买学生票")
+                        }
                     }
                     //  else if(contentText.indexOf("排队中") !== -1){
                     //     // myCustomClick(id("sure").text("排队").findOne(timeout))
@@ -2283,7 +2340,7 @@ function doClickTipWindow() {
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                         // global_result = 30
                         // errorMaps[global_result] = contentText
-                    } else if (contentText.indexOf("优惠资质核验通过的学生旅客") !== -1){
+                    } else if (contentText.indexOf("优惠资质核验通过的学生旅客，可通过12306网站或手机客户端购买学生专属车票。") !== -1){
                         myCustomClick(id("sure").text("我知道了").findOne(timeout))
                     }else if(contentText.indexOf("您的请求已在处理中，请在未完成订单中查询订单状态") !== -1){
                         myCustomClick(id("sure").text("确定").findOne(timeout))
@@ -2309,8 +2366,7 @@ function doClickTipWindow() {
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                         global_result = 36
                     } else if(contentText.indexOf("您是否接受系统为您分配残疾人专用席位") !== -1){
-                        // myCustomClick(id("sure").text("是").findOne(timeout))
-                        myCustomClick(id("sure").findOne(timeout))
+                        myCustomClick(id("sure").text("是").findOne(timeout))
                     } else if(contentText.indexOf("与已购车票行程无法衔接") !== -1){
                         myCustomClick(id("sure").text("确定").findOne(timeout))
                         global_result = 48
@@ -2808,7 +2864,7 @@ function doGoToMainPage2() {
     // com.MobileTicket:id/ticket_home_bottom_bar_ticket
     var homeRadio = detectWidgetItemWithChain("ticket_home_bottom_bar_ticket", "首页", "error", 5)
     var count = 0 
-    while(homeRadio == null) {
+    while(homeRadio == null && global_result == 0) {
         if(count == 10){
             console.log("无法返回首页，尝试使用layoutInspector重试")
             sendOnlineLog("info", "无法返回首页，尝试使用layoutInspector重试")
@@ -2958,6 +3014,27 @@ function doGoToMainPage() {
     return 2
 }
 
+function checkStudentSelected() {
+    var element = textContains("学生票").clickable(true).findOne(1000)
+    if(element != null){
+        var isChecked = element.isChecked()
+        // console.log("找到元素，当前选中状态:", isChecked)
+        
+        if(isChecked){
+            console.log("学生票被勾选")
+            element.click()
+            console.log("取消学生票勾选")
+            sendOnlineLog("info", "取消学生票勾选")
+        }else{
+            console.log("学生票未被勾选")
+        }
+        return true
+    }else{
+        console.log("未找到元素")
+        return false
+    }
+}
+
 
 // 设置站点和日期
 function doPrepareQueryParameters() {
@@ -2967,12 +3044,15 @@ function doPrepareQueryParameters() {
     // 出发站
     // var dep1 = id("home_page_train_dep1").findOne(timeout)
     sleep((random() + random(2, 4)) * 100)
-    
+
+    //检查学生票是否勾选，如果勾选则取消
+    checkStudentSelected()
+
     // 始发站设置重试机制
     var depRetryCount = 3
     for (var retry = 0; retry < depRetryCount; retry++) {
         var dep1 = detectWidgetItem("id", "home_page_train_dep1", "error", normal)
-        if(dep1 == null){
+        if(dep1 == null && global_result == 0){
             console.log("始发站元素未找到，尝试使用layoutInspector重试")
             sendOnlineLog("info", "始发站元素未找到，尝试使用layoutInspector重试")
             dep1 = layoutInspector.id("home_page_train_dep1").findOnce()
@@ -2997,7 +3077,7 @@ function doPrepareQueryParameters() {
             
             // 文本编辑框查找重试
             var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
-            if(stationEdit == null) {
+            if(stationEdit == null && global_result == 0) {
                 console.log("获取始发站文本编辑框失败，尝试使用layoutInspector重试")
                 sendOnlineLog("info", "获取始发站文本编辑框失败，尝试使用layoutInspector重试")
                 layoutInspector.captureCurrentWindow()
@@ -3102,7 +3182,7 @@ function doPrepareQueryParameters() {
             myCustomClick(arr1)
             sleep((random() + random(3, 5)) * 100)
             var stationEdit = detectWidgetItem("className", "android.widget.EditText", "error", 100)
-            if(stationEdit == null) {
+            if(stationEdit == null && global_result == 0) {
                 console.log("首次获取文本编辑框失败，尝试使用layoutInspector重试")
                 sendOnlineLog("info", "首次获取文本编辑框失败，尝试使用layoutInspector重试")
                 layoutInspector.captureCurrentWindow()
@@ -3182,7 +3262,7 @@ function doPrepareQueryParameters() {
             // sleep((random() + random(2, 5)) * 100)
             // text("选择日期").waitFor()
             var chooseDatePage = detectWidgetItem("text", "选择日期", "error", 100)
-            if(chooseDatePage == null) {
+            if(chooseDatePage == null && global_result == 0) {
                 console.log("首次获取选择日期页面失败，尝试使用layoutInspector重试")
                 sendOnlineLog("info", "首次获取选择日期页面失败，尝试使用layoutInspector重试")
                 layoutInspector.captureCurrentWindow()
@@ -3944,7 +4024,7 @@ function detectWidgetItemWithChainClassnameTextcontainsTextcontains(class_name, 
     let try_time = 0;
     while (!detect_widget_item) {
         sleep(100);
-        detect_widget_item = className(class_name).textContains(text_str).textContains(text_str2).findOnce();;
+        detect_widget_item = className(class_name).textContains(text_str).textContains(text_str2).findOnce();
         try_time++;
         if (try_time > try_time_max) {
             detectWidgetItemLog(log_level, class_name + "|" + text_str + "|" + text_str2, try_time_max);
@@ -4864,3 +4944,63 @@ function clickNodeCenter(obj) {
         sendOnlineLog("error", "clickNodeCenter点击失败, x1 = " + x1 + ", y1 = " + y1)
     }
 }
+
+function detectCurrentPage(){
+    if(global_result != 0) {
+        return ""
+    }
+    console.log("开始检测失误界面")
+    
+    var pageConfigs = [
+        { name: "tip", selector: id("title").textContains("温馨提示"), msg: "[假死所在页面]:卡在[温馨提示]界面；温馨提示未点击" },
+        { name: "uncompleted", selector: id("h5_title").text("未完成"), msg: "[假死所在页面]:卡在[未完成]界面；确认订单成功但无法离开未完成界面" },
+        { name: "choose_date", selector: id("h5_title").text("选择日期"), msg: "[假死所在页面]:卡在[选择日期]界面" },
+        { name: "choose_passenger", selector: id("h5_title").text("选择乘车人"), msg: "[假死所在页面]:卡在[选择乘车人]界面；乘车人不可选择-身份错误" },
+        { name: "add_recipient", selector: className("android.widget.Button").text("添加受让人"), msg: "[假死所在页面]:卡在[添加积分受让人]界面" },
+        { name: "confirm_order", selector: id("h5_title").text("确认订单"), msg: "[假死所在页面]:卡在[确认订单&提交订单]界面；提交订单失败" },
+        { name: "home", selector: id("ticket_home_bottom_bar_ticket"), msg: "[假死所在页面]:卡在[首页]界面；停在首页/无法进入待支付" },
+        // { name: "ticket_waiting", selector: textContains("订单处理中"), msg: "刚提交订单，出现[订单处理中]弹窗，时间超过脚本等待时间" },检测不到，暂时不使用
+        { name: "queue", selector: textContains("排队中"), msg: "[假死所在页面]:卡在[排队中]界面;排队时间超过脚本等待处理的时间" },
+        { name: "ticket_list", selector: text("直达"), msg: "[假死所在页面]:卡在选择车次界面；意外卡顿"}
+    ];
+    
+    var result = pageConfigs.find(function(config) {
+        return config.selector.findOnce() != null;
+    });
+    
+    if(result != null) {
+        // console.log(result.msg);
+        return result.msg;
+    }
+    var dumpInfo = dumpCurrentPageControls();
+    
+    // console.log("卡在其他界面；新界面需要添加");
+    return "卡在其他界面；新界面需要添加 " + dumpInfo;
+}
+
+function dumpCurrentPageControls() {
+    var elements = []
+    
+    var h5Title = id("h5_title").findOnce()
+    if(h5Title != null) elements.push("标题:" + h5Title.text())
+    
+    var tipTitle = id("title").findOnce()
+    if(tipTitle != null) elements.push("弹窗标题:" + tipTitle.text())
+
+    var tipContent = id("content").findOnce()
+    if(tipContent != null) elements.push("弹窗内容:" + tipContent.text())
+    
+
+    var buttons = className("android.widget.Button").find()
+    if(!buttons.empty()){
+        var btnTexts = []
+        for(var i = 0; i < Math.min(buttons.length, 5); i++){
+            var btn = buttons.get(i)
+            if(btn.text() && btn.text().length > 0) btnTexts.push(btn.text())
+        }
+        if(btnTexts.length > 0) elements.push("按钮:" + btnTexts.join(", "))
+    }
+
+    
+}
+

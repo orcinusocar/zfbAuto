@@ -55,24 +55,63 @@ const testCases = {
         method: "POST", 
         data: {
             id: "test_order_" + Date.now(),
+            work: "query_order",
+            proxy: "",
+            login: {
+                username: "",
+                password: "",
+                smscode: "",
+                tk: "",
+                imageB64: "",
+                dImageB64: "",
+                rectangle: {
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0
+                },
+                session: {
+                    tk: "",
+                    userName: "",
+                    accountInfoStr: "",
+                    cookieStr: "",
+                    cdn: "mobile.12306.cn"
+                }
+            },
             query: {
-                depart_station: "茂名",
-                arrive_station: "海口",
-                depart_date: "2025-11-28",
-                student: false
+                fromH5: false,
+                mode: "dc",
+                depart_station: "大连北",
+                depart_station_code: "DFT",
+                arrive_station: "长春",
+                arrive_station_code: "CCT",
+                student: false,
+                train_type: "[\"QB\"]",
+                depart_date: "2025-12-06",
+                fromDate: "2025-12-01",
+                toDate: "2025-12-15"
             },
             order: {
-                code: "Z501",
+                code: "G8005",
+                seat_type_code: "O",
+                seat_no: null,
                 passengers: [{
                     passenger_name: "曾粤扬",
+                    passenger_type: 1,
+                    identity_no: "4401***********34X",
                     identity_type: "1",
-                    identity_no: "4401***********34X", 
-                    passenger_type: "1"
+                    identity_type_name: "中国居民身份证",
+                    phone: "189****0020",
+                    sex_code: "F",
+                    born_date: "2002-09-24",
+                    gat_valid_date_end: "",
+                    userCountry: "CHN"
                 }],
-                seat_no: null,
-                seat_type_code: "6",
-                has_seat: false,
+                has_seat: true,
                 is_pay_by_point: false
+            },
+            device: {
+                color: ""
             }
         }
     },

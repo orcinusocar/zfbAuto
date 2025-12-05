@@ -172,3 +172,26 @@ function waitForElement(selector, timeout, checkInterval) {
     return null
 }
 
+function test(){
+    var element = textContains("学生票").clickable(true).find()
+    if(element.size() > 0){
+        var firstElement = element.get(0)
+        var isChecked = firstElement.isChecked()
+        console.log("找到元素，当前选中状态:", isChecked)
+        
+        if(isChecked){
+            console.log("学生票被勾选")
+            firstElement.click()
+            console.log("取消勾选")
+        }else{
+            console.log("学生票未被勾选")
+        }
+        return true
+    }else{
+        console.log("未找到元素")
+        return false
+    }
+}
+
+test()
+

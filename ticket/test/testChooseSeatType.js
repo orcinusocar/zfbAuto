@@ -61,8 +61,7 @@ function detectWidgetItem(item_type, item_content, log_level, try_time_frequency
         console.error("invalid " + item_type)
     }
 }
-
-var choosePassenger = detectWidgetItem("textcontains", "一等", "error", normal)
+var choosePassenger = detectWidgetItem("textcontains", "商务", "error", normal)
 if(choosePassenger != null) {
     console.log("找到选择按钮");
 }else{
